@@ -12,7 +12,7 @@ import {
   requestControlButtons,
   sendRequestButton,
   usersMainButtons,
-} from 'src/auth/main.buttons';
+} from 'src/auth/auth.buttons';
 import { UserRole } from 'src/enums/roles.enum';
 import requestMessage from 'src/messages/request.message';
 
@@ -22,7 +22,7 @@ export class AuthService {
     @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly configService: ConfigService,
     @InjectRepository(User) private usersRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async onStart(ctx: CustomContext) {
     ctx.session = {};
@@ -121,7 +121,7 @@ export class AuthService {
           this.bot.telegram.sendMessage(
             adminId,
             requestMessage(result),
-            requestControlButtons(),
+            requestControlButtons(result.id),
           );
 
           if (result) {

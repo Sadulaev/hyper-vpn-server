@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { TelegrafModule } from 'nestjs-telegraf';
 import * as LocalSession from 'telegraf-session-local';
 import { ConfigModule } from '@nestjs/config';
@@ -10,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './user/user.entity';
 import { AdminModule } from './admin/admin.module';
+import { RolesGuard } from './app.guard';
 
 const sessions = new LocalSession({ database: 'session_db.json' });
 
@@ -35,7 +35,8 @@ const sessions = new LocalSession({ database: 'session_db.json' });
     UserModule,
     AuthModule,
     AdminModule,
+    TypeOrmModule.forFeature([User])
   ],
-  providers: [AppService, AppUpdate],
+  providers: [AppUpdate, { provide: 'APP_GUARD', useClass: RolesGuard }],
 })
-export class AppModule {}
+export class AppModule { }

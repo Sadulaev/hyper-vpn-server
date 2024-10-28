@@ -9,5 +9,7 @@ export default (data: string) => {
     }
   });
 
+  console.log(result);
+
   return result;
 };

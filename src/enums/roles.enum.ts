@@ -3,4 +3,5 @@ export enum UserRole {
   Moderator = 'moderator',
   Admin = 'admin',
   Unknown = 'unknown',
+  Banned = 'banned'
 }

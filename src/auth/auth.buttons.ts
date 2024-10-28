@@ -17,6 +17,10 @@ export function adminMainButtons() {
         '👨‍💼 Управление пользователями',
         AdminCallbacks.ControlUsers,
       ),
+      Markup.button.callback(
+        '👨‍💼 Забаненные пользователи',
+        `${AdminCallbacks.GetBansList}&page-1`,
+      ),
       Markup.button.callback('✔ Записи о клиентах', AdminCallbacks.GetRecords),
       Markup.button.callback(
         '🔑 Активные запросы на вступление',
@@ -68,20 +72,20 @@ export function sendRequestButton() {
   ]);
 }
 
-export function requestControlButtons() {
+export function requestControlButtons(id: number) {
   return Markup.inlineKeyboard(
     [
       Markup.button.callback(
         '✔ Принять запрос',
-        AdminCallbacks.AcceptJoinRequest,
+        `${AdminCallbacks.AcceptJoinRequest}&id-${id}`,
       ),
       Markup.button.callback(
         '❌ Отклонить запрос',
-        AdminCallbacks.DeclineJoinRequest,
+        `${AdminCallbacks.DeclineJoinRequest}&id-${id}`,
       ),
       Markup.button.callback(
         '🔒 Отклонить запрос и забанить',
-        AdminCallbacks.DeclineAndBanJoinRequest,
+        `${AdminCallbacks.DeclineAndBanJoinRequest}&id-${id}`,
       ),
     ],
     { columns: 1 },
