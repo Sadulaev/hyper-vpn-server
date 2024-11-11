@@ -33,13 +33,15 @@
     {
       "id": "496437482:496437482",
       "data": {
-        "__scenes": {}
+        "__scenes": {},
+        "role": "admin"
       }
     },
     {
       "id": "1642080545:1642080545",
       "data": {
-        "__scenes": {}
+        "__scenes": {},
+        "role": "moderator"
       }
     }
   ]

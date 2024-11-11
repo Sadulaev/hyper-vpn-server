@@ -23,25 +23,10 @@ export class AuthUpdate {
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
     @InjectRepository(User) private usersRepository: Repository<User>,
-  ) {}
-
-  @Start()
-  async startCommand(@Ctx() ctx: CustomContext) {
-    this.authService.onStart(ctx);
-  }
-
-  @Command('reset')
-  async resetSession(@Ctx() ctx: CustomContext) {
-    this.authService.onReset(ctx);
-  }
+  ) { }
 
   @Action(DefaultCallbacks.SendJoinRequest)
   async startJoinRequest(@Ctx() ctx: CustomContext) {
     this.authService.onStartJoinRequest(ctx);
-  }
-
-  @On('text')
-  async fillJoinRequest(@Ctx() ctx: CustomContext) {
-    this.authService.onFillJoinRequest(ctx);
   }
 }

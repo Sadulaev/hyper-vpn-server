@@ -6,6 +6,7 @@ import { User } from './user/user.entity';
 import { Repository } from 'typeorm';
 import { CustomContext } from './types/context';
 import { UserRole } from './enums/roles.enum';
+import config from './config';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -17,11 +18,27 @@ export class RolesGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const ctx = TelegrafExecutionContext.create(context).getContext() as CustomContext;
 
-        const user = await this.usersRepository.findOne({ where: { id: ctx.chat.id } }); // Fetch user from DB
-        if (user && user.role === UserRole.Banned) {
-            ctx.reply('Вы были забанены. Дальнейшие действие невозможны')
-            throw new UnauthorizedException('Banned guy')
+        if (ctx.chat.id === +config().tg.admin) {
+            ctx.session.role = UserRole.Admin;
+            return true;
+        } else {
+            const user = await this.usersRepository.findOne({ where: { id: ctx.chat.id } }); // Fetch user from DB
+
+            if (user) {
+                if (user.role === UserRole.Banned) {
+                    ctx.reply('Вы были забанены. Дальнейшие действие невозможны')
+                    throw new UnauthorizedException('Banned guy')
+                } else {
+                    ctx.session.role = user.role;
+                    return true;
+                }
+            }
+
+            ctx.session.role = UserRole.Unknown;
+            return true;
         }
+
+
         return true;
     }
 }

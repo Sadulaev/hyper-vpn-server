@@ -28,7 +28,7 @@ export class AuthService {
     ctx.session = {};
 
     this.bot.telegram.callApi('setMyCommands', {
-      commands: [{ command: '/reset', description: 'Сбросить сессию' }],
+      commands: [{ command: '/reset', description: 'Вернутся к началу' }],
     });
 
     const adminId = +this.configService.get<string>('tg.admin');

@@ -4,12 +4,14 @@ import { InjectBot } from 'nestjs-telegraf';
 import { CustomContext } from 'src/types/context';
 import { User } from 'src/user/user.entity';
 import { Context, Telegraf } from 'telegraf';
-import { Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 import callbackToObj from 'utils/callbackToObj';
-import { banControlButtons, banslistButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorslistButtons, userslistButtons } from './admin.buttons';
+import { banControlButtons, bansListButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorsListButtons, userControlButtons, usersListButtons } from './admin.buttons';
 import { UserRole } from 'src/enums/roles.enum';
 import requestMessage from 'src/messages/request.message';
 import { requestControlButtons } from 'src/auth/auth.buttons';
+import deleteLastMessage from 'utils/deleteLastMessage';
+import userInfoMessage from 'src/messages/user-info.message';
 
 @Injectable()
 export class AdminService {
@@ -100,10 +102,14 @@ export class AdminService {
   async getModeratorsList(ctx: CustomContext) {
     const params = callbackToObj(ctx.update.callback_query.data) as {
       page: string;
+      name?: string
     };
 
     const moderatorsByPagination = await this.usersRepository.find({
-      where: { role: UserRole.Moderator },
+      where: {
+        name: params.name ? params.name : undefined,
+        role: UserRole.Moderator
+      },
       skip: (+params.page - 1) * 10,
       take: 10,
     })
@@ -111,10 +117,52 @@ export class AdminService {
     if (moderatorsByPagination.length === 0) {
       ctx.reply('⚠ Записей не найдено')
     } else {
-      ctx.reply('Список модераторов', moderatorslistButtons(moderatorsByPagination, +params.page))
+      ctx.reply('Список модераторов', moderatorsListButtons(moderatorsByPagination, +params.page))
     }
   }
 
+  async beginModeratorSearch(ctx: CustomContext) {
+    ctx.session = {
+      ...ctx.session,
+      isFindModerator: true,
+    }
+
+    ctx.answerCbQuery();
+    ctx.reply('Введите имя модератора для поиска')
+  }
+
+  async findModeratorByName(ctx: CustomContext) {
+    if (ctx.session?.findModerator) {
+
+      const moderatorsByPagination = await this.usersRepository.find({
+        where: {
+          name: Like(`%${ctx.message.text}%`),
+          role: UserRole.Moderator
+        },
+        skip: 0,
+        take: 10,
+      })
+
+      console.log(moderatorsByPagination.length)
+
+      if (moderatorsByPagination.length === 0) {
+        ctx.reply('⚠ Записей не найдено')
+      } else {
+        ctx.reply('Список модераторов', moderatorsListButtons(moderatorsByPagination, 1,))
+      }
+    }
+  }
+
+
+  async banModerator(ctx: CustomContext) {
+    const params = callbackToObj(ctx.update.callback_query.data) as {
+      id: string;
+    }
+
+    await this.usersRepository.update(+params.id, { role: UserRole.Banned })
+
+    ctx.reply('🔒 Модератор забанен')
+  }
 
   // Users services
   async controlUsers(ctx: CustomContext) {
@@ -135,7 +183,76 @@ export class AdminService {
     if (usersByPagination.length === 0) {
       ctx.reply('⚠ Записей не найдено')
     } else {
-      ctx.reply('Список пользователей', userslistButtons(usersByPagination, +params.page))
+      ctx.reply('Список пользователей', usersListButtons(usersByPagination, +params.page))
+    }
+  }
+
+  async beginUserSearch(ctx: CustomContext) {
+    ctx.session.searchUserInfo = {
+      step: 'name',
+      name: null,
+      organization: null,
+      phone: null,
+    }
+
+    ctx.reply('Введите имя (или точку если поиск не по имени)')
+  }
+
+  async onSearchUser(ctx: CustomContext) {
+    if (ctx.session?.searchUserInfo?.step === 'name') {
+      ctx.session.searchUserInfo.name = ctx.message.text;
+      ctx.session.searchUserInfo.step = 'organization';
+
+      ctx.reply('Введите организацию (или точку если поиск не по организации)')
+    } else if (ctx.session?.searchUserInfo?.step === 'organization') {
+      ctx.session.searchUserInfo.organization = ctx.message.text;
+      ctx.session.searchUserInfo.step = 'phone'
+
+      ctx.reply('Введите номер телефона (или точку если поиск не по телефону)')
+    } else if (ctx.session?.searchUserInfo?.step === 'phone') {
+      ctx.session.searchUserInfo.phone = ctx.message.text;
+
+      const usersByPagination = await this.usersRepository.find({
+        where: {
+          name: ctx.session.searchUserInfo.name !== '.' ? ILike(`%${ctx.session.searchUserInfo.name}%`) : undefined,
+          organization: ctx.session.searchUserInfo.organization !== '.' ? ILike(`%${ctx.session.searchUserInfo.name}%`) : undefined,
+          phone: ctx.session.searchUserInfo.phone !== '.' ? ILike(`%${ctx.session.searchUserInfo.name}%`) : undefined,
+        }
+      })
+
+      if (usersByPagination.length === 0) {
+        ctx.reply('⚠ Записей не найдено')
+      } else {
+        ctx.reply('Список пользователей', usersListButtons(usersByPagination, 1))
+      }
+
+      ctx.session.searchUserInfo = undefined;
+    }
+  }
+
+  async getUser(ctx: CustomContext) {
+    const params = callbackToObj(ctx.update.callback_query.data) as {
+      id: string;
+    };
+
+    const user = await this.usersRepository.findOne({ where: { id: +params.id } })
+
+    ctx.reply(userInfoMessage(user), userControlButtons(user.id))
+  }
+
+  async upgradeUserToModerator(ctx: CustomContext) {
+    const params = callbackToObj(ctx.update.callback_query.data) as {
+      id: string;
+    };
+
+    console.log(ctx.session.role)
+
+    try {
+      await this.usersRepository.update(+params.id, { role: UserRole.Moderator })
+
+      ctx.reply('Пользователь успешно переведен в модераторы')
+    } catch (err) {
+      ctx.reply('⚠ Ошибка обновления роли')
     }
   }
 
@@ -154,7 +271,7 @@ export class AdminService {
     if (bansByPagination.length === 0) {
       ctx.reply('⚠ Записей не найдено')
     } else {
-      ctx.reply('Список забаненных пользователей', banslistButtons(bansByPagination, +params.page))
+      ctx.reply('Список забаненных пользователей', bansListButtons(bansByPagination, +params.page))
     }
   }
 

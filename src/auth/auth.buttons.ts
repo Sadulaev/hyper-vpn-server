@@ -37,17 +37,19 @@ export function moderatorMainButtons() {
       '👨‍💼 Управление пользователями',
       ModeratorCallbacks.ControlUsers,
     ),
-
-    Markup.button.callback('✔ Записи о клиентах', 'moderator_get-records'),
     Markup.button.callback(
       '🔑 Активные запросы на вступление',
-      ModeratorCallbacks.GetJoinRequests,
+      `${ModeratorCallbacks.GetJoinRequests}&page-1`,
+    ),
+    Markup.button.callback(
+      '👨‍💼 Забаненные пользователи',
+      `${ModeratorCallbacks.GetBansList}&page-1`,
     ),
     Markup.button.callback(
       '✔ Записи о клиентах',
       ModeratorCallbacks.GetRecords,
     ),
-  ]);
+  ], { columns: 1 });
 }
 
 export function usersMainButtons() {
