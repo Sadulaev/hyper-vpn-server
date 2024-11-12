@@ -62,7 +62,7 @@ export function usersMainButtons() {
       '✍ Управление своими клиентами',
       UserCallbacks.ControlClients,
     ),
-  ]);
+  ], { columns: 1 });
 }
 
 export function sendRequestButton() {

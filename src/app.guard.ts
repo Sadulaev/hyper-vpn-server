@@ -37,8 +37,5 @@ export class RolesGuard implements CanActivate {
             ctx.session.role = UserRole.Unknown;
             return true;
         }
-
-
-        return true;
     }
 }
