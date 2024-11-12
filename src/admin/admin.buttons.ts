@@ -140,7 +140,26 @@ export const userControlButtons = (id: number) => {
       ),
       Markup.button.callback(
         'Забанить пользователя',
-        `${AdminCallbacks.BanUser}&id=${id}`,
+        `${AdminCallbacks.BanUser}&id-${id}`,
+      )
+    ], { columns: 1 }
+  )
+}
+
+export const moderatorControlButtons = (id: number) => {
+  return Markup.inlineKeyboard(
+    [
+      Markup.button.callback(
+        'Список клиентов модератора',
+        `${AdminCallbacks.GetUserClients}&id-${id}`,
+      ),
+      Markup.button.callback(
+        'Сделать модератора обычным пользователем',
+        `${AdminCallbacks.DegradeToUser}&id-${id}`,
+      ),
+      Markup.button.callback(
+        'Забанить пользователя',
+        `${AdminCallbacks.BanUser}&id-${id}`,
       )
     ], { columns: 1 }
   )

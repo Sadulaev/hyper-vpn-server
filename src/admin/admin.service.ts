@@ -6,7 +6,7 @@ import { User } from 'src/user/user.entity';
 import { Context, Telegraf } from 'telegraf';
 import { ILike, Like, Repository } from 'typeorm';
 import callbackToObj from 'utils/callbackToObj';
-import { banControlButtons, bansListButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorsListButtons, userControlButtons, usersListButtons } from './admin.buttons';
+import { banControlButtons, bansListButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorControlButtons, moderatorsListButtons, userControlButtons, usersListButtons } from './admin.buttons';
 import { UserRole } from 'src/enums/roles.enum';
 import requestMessage from 'src/messages/request.message';
 import { requestControlButtons } from 'src/auth/auth.buttons';
@@ -132,8 +132,7 @@ export class AdminService {
   }
 
   async findModeratorByName(ctx: CustomContext) {
-    if (ctx.session?.findModerator) {
-
+    if (ctx.session?.isFindModerator) {
       const moderatorsByPagination = await this.usersRepository.find({
         where: {
           name: Like(`%${ctx.message.text}%`),
@@ -148,11 +147,10 @@ export class AdminService {
       if (moderatorsByPagination.length === 0) {
         ctx.reply('⚠ Записей не найдено')
       } else {
-        ctx.reply('Список модераторов', moderatorsListButtons(moderatorsByPagination, 1,))
+        ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, 1,))
       }
     }
   }
-
 
   async banModerator(ctx: CustomContext) {
     const params = callbackToObj(ctx.update.callback_query.data) as {
@@ -162,6 +160,30 @@ export class AdminService {
     await this.usersRepository.update(+params.id, { role: UserRole.Banned })
 
     ctx.reply('🔒 Модератор забанен')
+  }
+
+  async getModerator(ctx: CustomContext) {
+    const params = callbackToObj(ctx.update.callback_query.data) as {
+      id: string;
+    };
+
+    const user = await this.usersRepository.findOne({ where: { id: +params.id } })
+
+    ctx.reply(userInfoMessage(user), moderatorControlButtons(user.id))
+  }
+
+  async degradeModeratorToUser(ctx: CustomContext) {
+    const params = callbackToObj(ctx.update.callback_query.data) as {
+      id: string;
+    };
+
+    try {
+      await this.usersRepository.update(+params.id, { role: UserRole.User })
+
+      ctx.reply('Модератор успешно переведен в пользователя')
+    } catch (err) {
+      ctx.reply('⚠ Ошибка обновления роли')
+    }
   }
 
   // Users services
@@ -245,8 +267,6 @@ export class AdminService {
       id: string;
     };
 
-    console.log(ctx.session.role)
-
     try {
       await this.usersRepository.update(+params.id, { role: UserRole.Moderator })
 
@@ -256,7 +276,6 @@ export class AdminService {
     }
   }
 
-  // Banned users services
   async getBansList(ctx: CustomContext) {
     const params = callbackToObj(ctx.update.callback_query.data) as {
       page: string;

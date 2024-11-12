@@ -31,17 +31,18 @@
       }
     },
     {
-      "id": "496437482:496437482",
-      "data": {
-        "__scenes": {},
-        "role": "admin"
-      }
-    },
-    {
       "id": "1642080545:1642080545",
       "data": {
         "__scenes": {},
-        "role": "moderator"
+        "role": "unknown"
+      }
+    },
+    {
+      "id": "496437482:496437482",
+      "data": {
+        "__scenes": {},
+        "role": "admin",
+        "isFindModerator": true
       }
     }
   ]

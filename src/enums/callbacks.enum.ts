@@ -12,6 +12,7 @@ export enum AdminCallbacks {
   FindModerator = 'admin_find-moderator',
   GetModeratorsList = 'admin_moderators-list',
   ControlModerators = 'admin_control-moderators',
+  DegradeToUser = 'admin_degrade-to-user',
 
   // Users feature
   GetUserClients = 'admin_get-user-clients',

@@ -80,6 +80,19 @@ export class AdminUpdate {
     this.adminsService.beginModeratorSearch(ctx);
   }
 
+  @Action(new RegExp(AdminCallbacks.GetModerator))
+  async getModerator(@Ctx() ctx: CustomContext) {
+    ctx.answerCbQuery();
+    // deleteLastMessage(ctx, ctx.callbackQuery.message.message_id)
+    this.adminsService.getModerator(ctx);
+  }
+
+  @Action(new RegExp(AdminCallbacks.DegradeToUser))
+  async degradeToUser(@Ctx() ctx: CustomContext) {
+    ctx.answerCbQuery();
+    this.adminsService.degradeModeratorToUser(ctx);
+  }
+
   // Users actions
   // -------------
   @Action(AdminCallbacks.ControlUsers)
