@@ -9,11 +9,10 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './user/user.entity';
 import { AdminModule } from './admin/admin.module';
 import { RolesGuard } from './app.guard';
-import { AuthService } from './auth/auth.service';
-import { AdminService } from './admin/admin.service';
-import { UserService } from './user/user.service';
 import { BotModule } from './bot/bot.module';
 import { ModeratorModule } from './moderator/moderator.module';
+import { Client } from './user/client.entity';
+import { Plan } from './user/plan.entity';
 
 const sessions = new LocalSession({ database: 'session_db.json' });
 
@@ -33,7 +32,7 @@ const sessions = new LocalSession({ database: 'session_db.json' });
       username: configuration().database.username,
       password: configuration().database.password,
       database: configuration().database.database,
-      entities: [User],
+      entities: [User, Client, Plan],
       synchronize: true,
     }),
     BotModule,

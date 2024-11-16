@@ -62,6 +62,10 @@ export function usersMainButtons() {
       '✍ Управление своими клиентами',
       UserCallbacks.ControlClients,
     ),
+    Markup.button.callback(
+      '➕ Добавить клиента',
+      UserCallbacks.CreateClient,
+    ),
   ], { columns: 1 });
 }
 

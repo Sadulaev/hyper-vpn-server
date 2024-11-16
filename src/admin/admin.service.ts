@@ -8,10 +8,10 @@ import { ILike, Like, Repository } from 'typeorm';
 import callbackToObj from 'utils/callbackToObj';
 import { banControlButtons, bansListButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorControlButtons, moderatorsListButtons, userControlButtons, usersListButtons } from './admin.buttons';
 import { UserRole } from 'src/enums/roles.enum';
-import requestMessage from 'src/messages/request.message';
+import requestMessage from 'messages/request.message';
 import { requestControlButtons } from 'src/auth/auth.buttons';
 import deleteLastMessage from 'utils/deleteLastMessage';
-import userInfoMessage from 'src/messages/user-info.message';
+import userInfoMessage from 'messages/user-info.message';
 
 @Injectable()
 export class AdminService {

@@ -55,6 +55,7 @@ export enum ModeratorCallbacks {
 export enum UserCallbacks {
   FindClients = 'user_find-clients',
   ControlClients = 'user_control-clients',
+  CreateClient = 'user_create-client'
 }
 
 export enum DefaultCallbacks {

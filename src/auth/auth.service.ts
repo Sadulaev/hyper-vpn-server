@@ -14,7 +14,7 @@ import {
   usersMainButtons,
 } from 'src/auth/auth.buttons';
 import { UserRole } from 'src/enums/roles.enum';
-import requestMessage from 'src/messages/request.message';
+import requestMessage from 'messages/request.message';
 
 @Injectable()
 export class AuthService {

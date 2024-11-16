@@ -1,5 +1,6 @@
 import { UserRole } from 'src/enums/roles.enum';
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+import { Client } from './client.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -20,4 +21,7 @@ export class User {
 
   @Column({ default: false })
   isBanned: boolean;
+
+  @OneToMany(() => Client, (client) => client.creator)
+  clients: Client[];
 }

@@ -1,10 +1,12 @@
 import { Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
 import { AdminService } from "src/admin/admin.service";
 import { AuthService } from "src/auth/auth.service";
+import config from "src/config";
 import { UserRole } from "src/enums/roles.enum";
 import { CustomContext } from "src/types/context";
 import { UserService } from "src/user/user.service";
 import { Context, Telegraf } from "telegraf";
+import { BotService } from "./bot.service";
 
 @Update()
 export class BotUpdate {
@@ -13,6 +15,7 @@ export class BotUpdate {
         private readonly adminService: AdminService,
         private readonly authService: AuthService,
         private readonly userService: UserService,
+        private readonly botService: BotService,
     ) { }
 
     @Start()
@@ -35,10 +38,18 @@ export class BotUpdate {
             this.adminService.onSearchUser(ctx);
         }
         if (ctx.session.role === UserRole.User) {
-            // some action of user
+            this.userService.onFillClientInfo(ctx);
         }
         if (ctx.session.role === UserRole.Unknown) {
             this.authService.onFillJoinRequest(ctx);
         }
+    }
+
+    @On('photo')
+    async onPhoto(@Ctx() ctx: CustomContext) {
+        if (ctx.session.role === UserRole.User) {
+            this.userService.onFillClientImages(ctx);
+        }
+
     }
 }
