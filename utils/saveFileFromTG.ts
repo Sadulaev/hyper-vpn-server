@@ -1,11 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { CustomContext } from 'src/types/context';
+import { CustomContext } from 'types/context';
 import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { Context, Telegraf } from 'telegraf';
-import { File, Update } from 'telegraf/typings/core/types/typegram';
-import { URL } from 'url';
+import { Update } from 'telegraf/typings/core/types/typegram';
 
 export default async (ctx: CustomContext, bot: Telegraf<Context<Update>>) => {
     const photos = ctx.message.photo;

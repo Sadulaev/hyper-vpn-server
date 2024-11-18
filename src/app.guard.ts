@@ -4,8 +4,8 @@ import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user/user.entity';
 import { Repository } from 'typeorm';
-import { CustomContext } from './types/context';
-import { UserRole } from './enums/roles.enum';
+import { CustomContext } from '../types/context';
+import { UserRole } from '../enums/roles.enum';
 import config from './config';
 
 @Injectable()

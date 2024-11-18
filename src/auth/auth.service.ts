@@ -5,7 +5,7 @@ import { Context, Telegraf } from 'telegraf';
 import { User } from '../user/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
-import { CustomContext } from 'src/types/context';
+import { CustomContext } from 'types/context';
 import {
   adminMainButtons,
   moderatorMainButtons,
@@ -13,7 +13,7 @@ import {
   sendRequestButton,
   usersMainButtons,
 } from 'src/auth/auth.buttons';
-import { UserRole } from 'src/enums/roles.enum';
+import { UserRole } from 'enums/roles.enum';
 import requestMessage from 'messages/request.message';
 
 @Injectable()
@@ -165,5 +165,7 @@ export class AuthService {
         );
       }
     }
+
+    ctx.session = {};
   }
 }

@@ -1,6 +1,6 @@
 import { Action, Ctx, InjectBot, On, Update } from 'nestjs-telegraf';
-import { AdminCallbacks } from 'src/enums/callbacks.enum';
-import { CustomContext } from 'src/types/context';
+import { AdminCallbacks } from 'enums/callbacks.enum';
+import { CustomContext } from 'types/context';
 import { AdminService } from './admin.service';
 import { Context, Telegraf } from 'telegraf';
 import { Admin } from 'typeorm';
@@ -126,6 +126,12 @@ export class AdminUpdate {
   async beginUserSearch(@Ctx() ctx: CustomContext) {
     ctx.answerCbQuery();
     this.adminsService.beginUserSearch(ctx);
+  }
+
+  @Action(new RegExp(AdminCallbacks.ChangeUserSearchPage))
+  async changeUserSearchPage(@Ctx() ctx: CustomContext) {
+    ctx.answerCbQuery();
+    this.adminsService.onChangeUserSearchPage(ctx);
   }
 
   @Action(new RegExp(AdminCallbacks.GetBansList))

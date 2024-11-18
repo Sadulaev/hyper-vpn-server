@@ -1,7 +1,7 @@
 import { Action, Ctx, Update } from "nestjs-telegraf";
 import { AdminService } from "src/admin/admin.service";
-import { ModeratorCallbacks } from "src/enums/callbacks.enum";
-import { CustomContext } from "src/types/context";
+import { ModeratorCallbacks } from "enums/callbacks.enum";
+import { CustomContext } from "types/context";
 
 @Update()
 export class ModeratorUpdate {

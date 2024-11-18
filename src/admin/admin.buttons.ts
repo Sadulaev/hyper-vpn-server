@@ -1,4 +1,4 @@
-import { AdminCallbacks } from 'src/enums/callbacks.enum';
+import { AdminCallbacks } from 'enums/callbacks.enum';
 import { User } from 'src/user/user.entity';
 import { Markup } from 'telegraf';
 
@@ -112,7 +112,31 @@ export const usersListButtons = (users: User[], page: number) => {
     ))
   }
 
-  return Markup.inlineKeyboard([...usersButtons, ...paginationButtons]);
+  return Markup.inlineKeyboard([...usersButtons, ...paginationButtons], {columns: 1});
+}
+
+export const searchUsersListButtons = (users: User[], page: number, callback: string) => {
+  const usersButtons = users.map((user) =>
+    Markup.button.callback(
+      `👨‍💼 ${user.name}`,
+      `${AdminCallbacks.GetUser}&id-${user.id}`,
+    ))
+
+  const paginationButtons = [];
+  if (page > 1) {
+    paginationButtons.push(Markup.button.callback(
+      '⬅ Предыдущая страница',
+      `${AdminCallbacks.ChangeUserSearchPage}&page-${page - 1 || 1}&${callback}`,
+    ))
+  }
+  if (users.length === 10) {
+    paginationButtons.push(Markup.button.callback(
+      'Следущая страница ➡',
+      `${AdminCallbacks.ChangeUserSearchPage}&page-${page + 1}&${callback}`,
+    ))
+  }
+
+  return Markup.inlineKeyboard([...usersButtons, ...paginationButtons], {columns: 1});
 }
 
 export const banControlButtons = (id: number) => {

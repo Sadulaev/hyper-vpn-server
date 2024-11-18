@@ -9,12 +9,12 @@ import {
 } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
 import { AuthService } from './auth.service';
-import { CustomContext } from 'src/types/context';
+import { CustomContext } from 'types/context';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/user.entity';
 import { Repository } from 'typeorm';
-import { DefaultCallbacks } from 'src/enums/callbacks.enum';
+import { DefaultCallbacks } from 'enums/callbacks.enum';
 
 @Update()
 export class AuthUpdate {

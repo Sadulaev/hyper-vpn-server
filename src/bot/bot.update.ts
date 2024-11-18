@@ -1,12 +1,13 @@
-import { Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
+import { Action, Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
 import { AdminService } from "src/admin/admin.service";
 import { AuthService } from "src/auth/auth.service";
 import config from "src/config";
-import { UserRole } from "src/enums/roles.enum";
-import { CustomContext } from "src/types/context";
+import { UserRole } from "enums/roles.enum";
+import { CustomContext } from "types/context";
 import { UserService } from "src/user/user.service";
 import { Context, Telegraf } from "telegraf";
 import { BotService } from "./bot.service";
+import { CommonCallbacks } from "enums/callbacks.enum";
 
 @Update()
 export class BotUpdate {
@@ -31,14 +32,15 @@ export class BotUpdate {
     @On('text')
     async handleText(@Ctx() ctx: CustomContext) {
         if (ctx.session.role === UserRole.Admin) {
-            this.adminService.findModeratorByName(ctx);
-            this.adminService.onSearchUser(ctx);
+            this.adminService.onFillModeratorSearch(ctx);
+            this.adminService.onFillSearchUserInfo(ctx);
         }
         if (ctx.session.role === UserRole.Moderator) {
-            this.adminService.onSearchUser(ctx);
+            this.adminService.onFillSearchUserInfo(ctx);
         }
         if (ctx.session.role === UserRole.User) {
-            this.userService.onFillClientInfo(ctx);
+            this.botService.onFillCreateClientInfo(ctx);
+            this.botService.onFillSearchClientInfo(ctx);
         }
         if (ctx.session.role === UserRole.Unknown) {
             this.authService.onFillJoinRequest(ctx);
@@ -47,9 +49,27 @@ export class BotUpdate {
 
     @On('photo')
     async onPhoto(@Ctx() ctx: CustomContext) {
-        if (ctx.session.role === UserRole.User) {
-            this.userService.onFillClientImages(ctx);
+        if (
+            ctx.session.role === UserRole.Admin || 
+            ctx.session.role === UserRole.Moderator ||
+            ctx.session.role === UserRole.User
+        ) {
+            this.botService.onFillClientImages(ctx);
         }
+    }
 
+    @Action(new RegExp(CommonCallbacks.GetMyClients))
+    async getMyClients(@Ctx() ctx: CustomContext) {
+        await this.botService.getMyClients(ctx);
+    }
+
+    @Action(CommonCallbacks.FindClients)
+    async startClientSearch(@Ctx() ctx: CustomContext) {
+        await this.botService.onStartSearchClient(ctx);
+    }
+
+    @Action(CommonCallbacks.ChangeSearchClientPage)
+    async changeSearchClientPage(@Ctx() ctx: CustomContext) {
+        await this.botService.onChangeClientSearchPage(ctx);
     }
 }

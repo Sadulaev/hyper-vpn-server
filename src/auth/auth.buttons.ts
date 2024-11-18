@@ -1,9 +1,10 @@
 import {
   AdminCallbacks,
+  CommonCallbacks,
   DefaultCallbacks,
   ModeratorCallbacks,
   UserCallbacks,
-} from 'src/enums/callbacks.enum';
+} from 'enums/callbacks.enum';
 import { Markup } from 'telegraf';
 
 export function adminMainButtons() {
@@ -56,15 +57,15 @@ export function usersMainButtons() {
   return Markup.inlineKeyboard([
     Markup.button.callback(
       '🔍 Поиск клинта по базе',
-      UserCallbacks.FindClients,
+      CommonCallbacks.FindClients,
     ),
     Markup.button.callback(
       '✍ Управление своими клиентами',
-      UserCallbacks.ControlClients,
+      `${CommonCallbacks.GetMyClients}&page-1`,
     ),
     Markup.button.callback(
       '➕ Добавить клиента',
-      UserCallbacks.CreateClient,
+      CommonCallbacks.CreateClient,
     ),
   ], { columns: 1 });
 }

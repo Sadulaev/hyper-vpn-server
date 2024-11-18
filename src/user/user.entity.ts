@@ -1,4 +1,4 @@
-import { UserRole } from 'src/enums/roles.enum';
+import { UserRole } from 'enums/roles.enum';
 import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
 import { Client } from './client.entity';
 

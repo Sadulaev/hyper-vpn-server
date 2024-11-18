@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectBot } from 'nestjs-telegraf';
-import { CustomContext } from 'src/types/context';
+import { CustomContext } from 'types/context';
 import { User } from 'src/user/user.entity';
 import { Context, Telegraf } from 'telegraf';
 import { ILike, Like, Repository } from 'typeorm';
 import callbackToObj from 'utils/callbackToObj';
-import { banControlButtons, bansListButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorControlButtons, moderatorsListButtons, userControlButtons, usersListButtons } from './admin.buttons';
-import { UserRole } from 'src/enums/roles.enum';
+import { banControlButtons, bansListButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorControlButtons, moderatorsListButtons, searchUsersListButtons, userControlButtons, usersListButtons } from './admin.buttons';
+import { UserRole } from 'enums/roles.enum';
 import requestMessage from 'messages/request.message';
 import { requestControlButtons } from 'src/auth/auth.buttons';
 import deleteLastMessage from 'utils/deleteLastMessage';
 import userInfoMessage from 'messages/user-info.message';
+import { AdminCallbacks } from 'enums/callbacks.enum';
+import objToCallback from 'utils/objToCallback';
 
 @Injectable()
 export class AdminService {
@@ -124,31 +126,60 @@ export class AdminService {
   async beginModeratorSearch(ctx: CustomContext) {
     ctx.session = {
       ...ctx.session,
-      isFindModerator: true,
+      searchModeratorsByName: {
+        step: 'name',
+        name: null
+      },
     }
 
     ctx.answerCbQuery();
     ctx.reply('Введите имя модератора для поиска')
   }
 
-  async findModeratorByName(ctx: CustomContext) {
-    if (ctx.session?.isFindModerator) {
-      const moderatorsByPagination = await this.usersRepository.find({
-        where: {
-          name: Like(`%${ctx.message.text}%`),
-          role: UserRole.Moderator
-        },
-        skip: 0,
-        take: 10,
-      })
+  async onFillModeratorSearch(ctx: CustomContext) {
+    if (ctx.session.searchModeratorsByName) {
+      if (ctx.session.searchModeratorsByName.step === 'name') {
+        ctx.session.searchModeratorsByName.name === ctx.message.text;
 
-      console.log(moderatorsByPagination.length)
+        const moderatorsByPagination = await this.usersRepository.find({
+          where: {
+            name: Like(`%${ctx.message.text}%`),
+            role: UserRole.Moderator
+          },
+          skip: 0,
+          take: 10,
+        })
 
-      if (moderatorsByPagination.length === 0) {
-        ctx.reply('⚠ Записей не найдено')
-      } else {
-        ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, 1,))
+        if (moderatorsByPagination.length === 0) {
+          ctx.reply('⚠ Записей не найдено')
+        } else {
+          ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, 1))
+        }
+        
+        ctx.session.searchModeratorsByName = undefined;
       }
+    }
+  }
+
+  async onChangeModeratorSearchPage(ctx: CustomContext) {
+    const params = callbackToObj(ctx.update.callback_query.data) as {
+      page: string;
+      name: string;
+    }
+
+    const moderatorsByPagination = await this.usersRepository.find({
+      where: {
+        name: params.name ? Like(`%${params.name}%`) : undefined,
+        role: UserRole.Moderator
+      },
+      skip: (+params.page - 1) * 10,
+      take: 10,
+    })
+
+    if (moderatorsByPagination.length === 0) {
+      ctx.reply('⚠ Записей не найдено')
+    } else {
+      ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, +params.page))
     }
   }
 
@@ -220,7 +251,7 @@ export class AdminService {
     ctx.reply('Введите имя (или точку если поиск не по имени)')
   }
 
-  async onSearchUser(ctx: CustomContext) {
+  async onFillSearchUserInfo(ctx: CustomContext) {
     if (ctx.session?.searchUserInfo?.step === 'name') {
       ctx.session.searchUserInfo.name = ctx.message.text;
       ctx.session.searchUserInfo.step = 'organization';
@@ -228,28 +259,76 @@ export class AdminService {
       ctx.reply('Введите организацию (или точку если поиск не по организации)')
     } else if (ctx.session?.searchUserInfo?.step === 'organization') {
       ctx.session.searchUserInfo.organization = ctx.message.text;
-      ctx.session.searchUserInfo.step = 'phone'
+      ctx.session.searchUserInfo.step = 'phone';
 
       ctx.reply('Введите номер телефона (или точку если поиск не по телефону)')
     } else if (ctx.session?.searchUserInfo?.step === 'phone') {
       ctx.session.searchUserInfo.phone = ctx.message.text;
 
+      const searchingObj = {
+        name: ctx.session.searchUserInfo.name === '.' ? undefined : ctx.session.searchUserInfo.name,
+        organization: ctx.session.searchUserInfo.organization === '.' ? undefined : ctx.session.searchUserInfo.organization,
+        phone: ctx.session.searchUserInfo.phone === '.' ? undefined : ctx.session.searchUserInfo.phone,
+      }
+
+      console.log('searchingObj', searchingObj)
+
       const usersByPagination = await this.usersRepository.find({
         where: {
-          name: ctx.session.searchUserInfo.name !== '.' ? ILike(`%${ctx.session.searchUserInfo.name}%`) : undefined,
-          organization: ctx.session.searchUserInfo.organization !== '.' ? ILike(`%${ctx.session.searchUserInfo.name}%`) : undefined,
-          phone: ctx.session.searchUserInfo.phone !== '.' ? ILike(`%${ctx.session.searchUserInfo.name}%`) : undefined,
-        }
+          name: searchingObj.name ? ILike(`%${searchingObj.name}%`) : undefined,
+          organization: searchingObj.organization ? ILike(`%${searchingObj.organization}%`) : undefined,
+          phone: searchingObj.phone ? ILike(`%${searchingObj.phone}%`) : undefined,
+        },
+        skip: 0,
+        take: 10,
       })
 
       if (usersByPagination.length === 0) {
         ctx.reply('⚠ Записей не найдено')
       } else {
-        ctx.reply('Список пользователей', usersListButtons(usersByPagination, 1))
+        ctx.reply('Список пользователей', searchUsersListButtons(
+          usersByPagination, 
+          1,
+          objToCallback(searchingObj)))
+
       }
 
       ctx.session.searchUserInfo = undefined;
     }
+  }
+
+  async onChangeUserSearchPage(ctx: CustomContext) {
+    const params = callbackToObj(ctx.update.callback_query.data) as { 
+      page: string;
+      name: string;
+      organization: string;
+      phone: string;
+    }
+
+    const searchingObj = {
+      name: params.name,
+      organization: params.organization,
+      phone: params.phone,
+    }
+
+      const usersByPagination = await this.usersRepository.find({
+        where: {
+          name: params.name !== '.' ? ILike(`%${params.name}%`) : undefined,
+          organization: params.organization !== '.' ? ILike(`%${params.organization}%`) : undefined,
+          phone: params.phone !== '.' ? ILike(`%${params.phone}%`) : undefined,
+        },
+        skip: (+params.page - 1) * 10,
+        take: 10,
+      })
+
+      if (usersByPagination.length === 0) {
+        ctx.reply('⚠ Записей не найдено')
+      } else {
+        ctx.reply('Список пользователей', searchUsersListButtons(
+          usersByPagination, 
+          +params.page, 
+          objToCallback(searchingObj)))
+      }
   }
 
   async getUser(ctx: CustomContext) {

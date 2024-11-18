@@ -22,6 +22,7 @@ export enum AdminCallbacks {
   GetBannedUser = 'admin_get_banned-user',
   GetUser = 'admin_get-user',
   FindUser = 'admin_find-user',
+  ChangeUserSearchPage = 'admin_change-user-search-page',
   GetUsersList = 'admin_users-list',
   ControlUsers = 'admin_control-users',
 
@@ -52,10 +53,15 @@ export enum ModeratorCallbacks {
   GetRecords = 'moderator_get-records',
 }
 
-export enum UserCallbacks {
-  FindClients = 'user_find-clients',
-  ControlClients = 'user_control-clients',
-  CreateClient = 'user_create-client'
+
+export enum UserCallbacks {}
+
+export enum CommonCallbacks {
+  FindClients = 'find-clients',
+  ChangeSearchClientPage = 'change-search-client-page',
+  GetClient = 'get-client',
+  GetMyClients = 'get-my-clients',
+  CreateClient = 'create-client',
 }
 
 export enum DefaultCallbacks {
