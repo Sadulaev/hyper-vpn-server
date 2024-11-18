@@ -14,7 +14,7 @@ import { ModeratorModule } from './moderator/moderator.module';
 import { Client } from './user/client.entity';
 import { Plan } from './user/plan.entity';
 
-const sessions = new LocalSession({ database: 'session_db.json' });
+const sessions = new LocalSession({ database: 'session_db.json' })
 
 @Module({
   imports: [
