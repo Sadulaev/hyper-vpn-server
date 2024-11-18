@@ -2,8 +2,8 @@ import { Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
 import { Context, Telegraf } from "telegraf";
 import { AuthService } from "./auth.service";
 import { Roles } from "src/decorators/roles.decorator";
-import { UserRole } from "src/enums/roles.enum";
-import { CustomContext } from "src/types/context";
+import { UserRole } from "enums/roles.enum";
+import { CustomContext } from "types/context";
 import { ConfigService } from "@nestjs/config";
 
 @Update()
