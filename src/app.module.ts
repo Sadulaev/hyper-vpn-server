@@ -11,13 +11,21 @@ import { AdminModule } from './admin/admin.module';
 import { RolesGuard } from './app.guard';
 import { BotModule } from './bot/bot.module';
 import { ModeratorModule } from './moderator/moderator.module';
-import { Client } from './user/client.entity';
-import { Plan } from './user/plan.entity';
+import { Client } from './client/client.entity';
+import { Plan } from './plan/plan.entity';
+import { ClientModule } from './client/client.module';
+import { PlanModule } from './plan/plan.module';
+import { TelegramExceptionFilter } from './app.filter';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 const sessions = new LocalSession({ database: 'session_db.json' })
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'pages'), // Путь к папке с вашими статическими файлами
+    }),
     ConfigModule.forRoot({
       load: [configuration],
     }),
@@ -40,8 +48,19 @@ const sessions = new LocalSession({ database: 'session_db.json' })
     AdminModule,
     ModeratorModule,
     UserModule,
+    ClientModule,
+    PlanModule,
     TypeOrmModule.forFeature([User])
   ],
-  providers: [{ provide: 'APP_GUARD', useClass: RolesGuard }],
+  providers: [
+    {
+      provide: 'APP_GUARD',
+      useClass: RolesGuard
+    },
+    {
+      provide: 'APP_FILTER',
+      useClass: TelegramExceptionFilter
+    }
+  ],
 })
 export class AppModule { }

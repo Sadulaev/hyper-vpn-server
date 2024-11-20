@@ -60,7 +60,11 @@ export function usersMainButtons() {
       CommonCallbacks.FindClients,
     ),
     Markup.button.callback(
-      '✍ Управление своими клиентами',
+      '✍ Добавленные вами клиенты',
+      `${CommonCallbacks.GetMyClients}&page-1`,
+    ),
+    Markup.button.callback(
+      '💵 Ваши активные клиенты',
       `${CommonCallbacks.GetMyClients}&page-1`,
     ),
     Markup.button.callback(

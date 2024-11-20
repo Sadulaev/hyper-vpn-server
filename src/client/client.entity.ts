@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Plan } from "./plan.entity";
-import { User } from "./user.entity";
+import { User } from "../user/user.entity";
+import { Plan } from "src/plan/plan.entity";
 
 @Entity()
 export class Client {
@@ -10,7 +10,7 @@ export class Client {
     @Column({nullable: false})
     fullName: string;
 
-    @Column({type: 'timestamptz', nullable: false})
+    @Column({type: 'date', nullable: false})
     birthDate: Date;
 
     @Column({default: null, nullable: true})
@@ -19,9 +19,9 @@ export class Client {
     @Column({type: 'json', default: null, nullable: true})
     images: string | null;
 
-    @OneToMany(() => Plan, (plan) => plan.clientId)
-    plans: Plan[];
-
     @ManyToOne(() => User, (user) => user.clients, {nullable: true})
-    creator: User | null;
+    user: User | null;
+
+    @OneToMany(() => Plan, (plan) => plan.client, {nullable: true})
+    plans: Plan[];
 }

@@ -62,6 +62,20 @@ export enum CommonCallbacks {
   GetClient = 'get-client',
   GetMyClients = 'get-my-clients',
   CreateClient = 'create-client',
+  GetAllClientPlansPDF = 'get-all-client-plans-pdf',
+  GetMyPlansOfClient = 'get-my-plans-of-client',
+  GetMyPlansOfClientPDF = 'get-my-plans-of-client-pdf',
+  CreatePlanToClient = 'create-plan-to-client',
+  GetClientPassportImages = 'get-client-passport-images',
+  AddRecordManually = 'add-record-manually',
+  GetClientPlans = 'get-client-plans',
+  GetPlan = 'get-plan',
+  GetPlanCreator = 'get-plan-creator',
+  DeletePlan = 'delete-plan',
+  CreatePlanWithActiveStatus = 'create-plan-with-active-status',
+  CreatePlanWithExpiredStatus = 'create-plan-with-expired-status',
+  CreatePlanWithFreezedStatus = 'create-plan-with-freezed-status',
+  CreatePlanWithClosedStatus = 'create-plan-with-freezed-status'
 }
 
 export enum DefaultCallbacks {

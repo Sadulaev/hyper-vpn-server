@@ -6,8 +6,8 @@ import { UserRole } from "enums/roles.enum";
 import { CustomContext } from "types/context";
 import { UserService } from "src/user/user.service";
 import { Context, Telegraf } from "telegraf";
-import { BotService } from "./bot.service";
-import { CommonCallbacks } from "enums/callbacks.enum";
+import { ClientService } from "src/client/client.service";
+import { PlanService } from "src/plan/plan.service";
 
 @Update()
 export class BotUpdate {
@@ -16,7 +16,8 @@ export class BotUpdate {
         private readonly adminService: AdminService,
         private readonly authService: AuthService,
         private readonly userService: UserService,
-        private readonly botService: BotService,
+        private readonly clientService: ClientService,
+        private readonly planService: PlanService
     ) { }
 
     @Start()
@@ -27,6 +28,7 @@ export class BotUpdate {
     @Command('reset')
     async resetSession(@Ctx() ctx: CustomContext) {
         this.authService.onReset(ctx);
+
     }
 
     @On('text')
@@ -39,8 +41,9 @@ export class BotUpdate {
             this.adminService.onFillSearchUserInfo(ctx);
         }
         if (ctx.session.role === UserRole.User) {
-            this.botService.onFillCreateClientInfo(ctx);
-            this.botService.onFillSearchClientInfo(ctx);
+            this.clientService.onFillCreateClientInfo(ctx);
+            this.clientService.onFillSearchClientInfo(ctx);
+            this.planService.onFillCreatePlanInfo(ctx);
         }
         if (ctx.session.role === UserRole.Unknown) {
             this.authService.onFillJoinRequest(ctx);
@@ -54,22 +57,7 @@ export class BotUpdate {
             ctx.session.role === UserRole.Moderator ||
             ctx.session.role === UserRole.User
         ) {
-            this.botService.onFillClientImages(ctx);
+            this.clientService.onFillClientImages(ctx);
         }
-    }
-
-    @Action(new RegExp(CommonCallbacks.GetMyClients))
-    async getMyClients(@Ctx() ctx: CustomContext) {
-        await this.botService.getMyClients(ctx);
-    }
-
-    @Action(CommonCallbacks.FindClients)
-    async startClientSearch(@Ctx() ctx: CustomContext) {
-        await this.botService.onStartSearchClient(ctx);
-    }
-
-    @Action(CommonCallbacks.ChangeSearchClientPage)
-    async changeSearchClientPage(@Ctx() ctx: CustomContext) {
-        await this.botService.onChangeClientSearchPage(ctx);
     }
 }

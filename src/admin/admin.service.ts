@@ -35,9 +35,11 @@ export class AdminService {
     });
 
     if (usersByPagination.length === 0) {
+      ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
-      ctx.reply(
+      ctx.answerCbQuery();
+      ctx.editMessageText(
         'Выберите из списка заявку',
         joinRequestsButtons(usersByPagination, +params.page),
       );
@@ -54,8 +56,10 @@ export class AdminService {
     });
 
     if (joinRequestUser) {
-      ctx.reply(requestMessage(joinRequestUser), requestControlButtons(+params.id));
+      ctx.answerCbQuery();
+      ctx.editMessageText(requestMessage(joinRequestUser), requestControlButtons(+params.id));
     } else {
+      ctx.answerCbQuery();
       ctx.reply('Произошла ошибка. Пожалуйста попробуйте снова');
     }
   }
@@ -67,6 +71,7 @@ export class AdminService {
 
     await this.usersRepository.update(+params.id, { role: UserRole.User })
 
+    ctx.answerCbQuery();
     ctx.reply('✔ Заявка одобрена')
 
     this.bot.telegram.sendMessage(+params.id, 'Ваша заявка была одобрена, теперь вы можете пользоваться базой.')
@@ -79,6 +84,7 @@ export class AdminService {
 
     await this.usersRepository.delete({ id: +params.id })
 
+    ctx.answerCbQuery();
     ctx.reply('❌ Заявка отклонена')
 
     this.bot.telegram.sendMessage(+params.id, 'Ваша заявка была отклонена, исправьте данные и попробуйта снова.')
@@ -91,13 +97,15 @@ export class AdminService {
 
     await this.usersRepository.update(+params.id, { role: UserRole.Banned })
 
+    ctx.answerCbQuery();
     ctx.reply('🔒 Заявка отклонена и пользователь забанен')
   }
 
 
   // Moderators services
   async controlModerators(ctx: CustomContext) {
-    ctx.reply('Выберите действие', controlModeratorsButtons())
+    ctx.answerCbQuery();
+    ctx.editMessageText('Выберите действие', controlModeratorsButtons())
   }
 
 
@@ -117,9 +125,11 @@ export class AdminService {
     })
 
     if (moderatorsByPagination.length === 0) {
+      ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
-      ctx.reply('Список модераторов', moderatorsListButtons(moderatorsByPagination, +params.page))
+      ctx.answerCbQuery();
+      ctx.editMessageText('Список модераторов', moderatorsListButtons(moderatorsByPagination, +params.page))
     }
   }
 
@@ -155,7 +165,7 @@ export class AdminService {
         } else {
           ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, 1))
         }
-        
+
         ctx.session.searchModeratorsByName = undefined;
       }
     }
@@ -200,7 +210,8 @@ export class AdminService {
 
     const user = await this.usersRepository.findOne({ where: { id: +params.id } })
 
-    ctx.reply(userInfoMessage(user), moderatorControlButtons(user.id))
+    ctx.answerCbQuery();
+    ctx.editMessageText(userInfoMessage(user), moderatorControlButtons(user.id))
   }
 
   async degradeModeratorToUser(ctx: CustomContext) {
@@ -211,15 +222,18 @@ export class AdminService {
     try {
       await this.usersRepository.update(+params.id, { role: UserRole.User })
 
+      ctx.answerCbQuery();
       ctx.reply('Модератор успешно переведен в пользователя')
     } catch (err) {
+      ctx.answerCbQuery();
       ctx.reply('⚠ Ошибка обновления роли')
     }
   }
 
   // Users services
   async controlUsers(ctx: CustomContext) {
-    ctx.reply('Выберите действие', controlUsersButtons())
+    ctx.answerCbQuery();
+    ctx.editMessageText('Выберите действие', controlUsersButtons())
   }
 
   async getUsersList(ctx: CustomContext) {
@@ -234,9 +248,11 @@ export class AdminService {
     })
 
     if (usersByPagination.length === 0) {
+      ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
-      ctx.reply('Список пользователей', usersListButtons(usersByPagination, +params.page))
+      ctx.answerCbQuery();
+      ctx.editMessageText('Список пользователей', usersListButtons(usersByPagination, +params.page))
     }
   }
 
@@ -248,6 +264,7 @@ export class AdminService {
       phone: null,
     }
 
+    ctx.answerCbQuery();
     ctx.reply('Введите имя (или точку если поиск не по имени)')
   }
 
@@ -287,7 +304,7 @@ export class AdminService {
         ctx.reply('⚠ Записей не найдено')
       } else {
         ctx.reply('Список пользователей', searchUsersListButtons(
-          usersByPagination, 
+          usersByPagination,
           1,
           objToCallback(searchingObj)))
 
@@ -298,7 +315,7 @@ export class AdminService {
   }
 
   async onChangeUserSearchPage(ctx: CustomContext) {
-    const params = callbackToObj(ctx.update.callback_query.data) as { 
+    const params = callbackToObj(ctx.update.callback_query.data) as {
       page: string;
       name: string;
       organization: string;
@@ -311,24 +328,26 @@ export class AdminService {
       phone: params.phone,
     }
 
-      const usersByPagination = await this.usersRepository.find({
-        where: {
-          name: params.name !== '.' ? ILike(`%${params.name}%`) : undefined,
-          organization: params.organization !== '.' ? ILike(`%${params.organization}%`) : undefined,
-          phone: params.phone !== '.' ? ILike(`%${params.phone}%`) : undefined,
-        },
-        skip: (+params.page - 1) * 10,
-        take: 10,
-      })
+    const usersByPagination = await this.usersRepository.find({
+      where: {
+        name: params.name !== '.' ? ILike(`%${params.name}%`) : undefined,
+        organization: params.organization !== '.' ? ILike(`%${params.organization}%`) : undefined,
+        phone: params.phone !== '.' ? ILike(`%${params.phone}%`) : undefined,
+      },
+      skip: (+params.page - 1) * 10,
+      take: 10,
+    })
 
-      if (usersByPagination.length === 0) {
-        ctx.reply('⚠ Записей не найдено')
-      } else {
-        ctx.reply('Список пользователей', searchUsersListButtons(
-          usersByPagination, 
-          +params.page, 
-          objToCallback(searchingObj)))
-      }
+    if (usersByPagination.length === 0) {
+      ctx.answerCbQuery();
+      ctx.reply('⚠ Записей не найдено')
+    } else {
+      ctx.answerCbQuery();
+      ctx.editMessageText('Список пользователей', searchUsersListButtons(
+        usersByPagination,
+        +params.page,
+        objToCallback(searchingObj)))
+    }
   }
 
   async getUser(ctx: CustomContext) {
@@ -338,7 +357,8 @@ export class AdminService {
 
     const user = await this.usersRepository.findOne({ where: { id: +params.id } })
 
-    ctx.reply(userInfoMessage(user), userControlButtons(user.id))
+    ctx.answerCbQuery();
+    ctx.editMessageText(userInfoMessage(user), userControlButtons(user.id))
   }
 
   async upgradeUserToModerator(ctx: CustomContext) {
@@ -349,8 +369,10 @@ export class AdminService {
     try {
       await this.usersRepository.update(+params.id, { role: UserRole.Moderator })
 
+      ctx.answerCbQuery();
       ctx.reply('Пользователь успешно переведен в модераторы')
     } catch (err) {
+      ctx.answerCbQuery();
       ctx.reply('⚠ Ошибка обновления роли')
     }
   }
@@ -367,9 +389,11 @@ export class AdminService {
     })
 
     if (bansByPagination.length === 0) {
+      ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
-      ctx.reply('Список забаненных пользователей', bansListButtons(bansByPagination, +params.page))
+      ctx.answerCbQuery();
+      ctx.editMessageText('Список забаненных пользователей', bansListButtons(bansByPagination, +params.page))
     }
   }
 
@@ -383,8 +407,10 @@ export class AdminService {
     });
 
     if (bannedUser) {
-      ctx.reply(requestMessage(bannedUser), banControlButtons(+params.id));
+      ctx.answerCbQuery();
+      ctx.editMessageText(requestMessage(bannedUser), banControlButtons(+params.id));
     } else {
+      ctx.answerCbQuery();
       ctx.reply('Произошла ошибка. Пожалуйста попробуйте снова');
     }
   }
@@ -396,6 +422,7 @@ export class AdminService {
 
     await this.usersRepository.update(+params.id, { role: UserRole.User })
 
+    ctx.answerCbQuery();
     ctx.reply('🔓 Пользователь был разбанен')
 
     this.bot.telegram.sendMessage(+params.id, 'Вы были разбанены. Теперь у вас есть полный доступ к базе')

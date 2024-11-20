@@ -67,6 +67,8 @@ export class AuthService {
       organization: null,
       phone: null,
     };
+    
+    ctx.answerCbQuery();
     ctx.reply('Пожалуйста, введите ФИО');
   }
 
@@ -136,6 +138,8 @@ export class AuthService {
   }
 
   async onReset(ctx: CustomContext) {
+    ctx.session = ctx.session.role ? {role: ctx.session.role} : {};
+
     const adminId = +this.configService.get<string>('tg.admin');
 
     if (ctx.message.chat.id === adminId) {
@@ -165,7 +169,5 @@ export class AuthService {
         );
       }
     }
-
-    ctx.session = {};
   }
 }

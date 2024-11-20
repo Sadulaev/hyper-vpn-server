@@ -2,23 +2,23 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectBot } from "nestjs-telegraf";
 import config from "src/config";
-import { Client } from "src/user/client.entity";
-import { Plan } from "src/user/plan.entity";
+import { Client } from "src/client/client.entity";
+import { Plan } from "src/plan/plan.entity";
 import { User } from "src/user/user.entity";
 import { Context, Telegraf } from "telegraf";
 import { ILike, Repository } from "typeorm";
 import { CustomContext } from "types/context";
 import callbackToObj from "utils/callbackToObj";
 import saveFileFromTG from "utils/saveFileFromTG";
-import { clientsListButtons, searchClientsList } from "./bot.buttons";
+import { clientControlButtons, clientsListButtons, searchClientsList } from "./client.buttons";
 import objToCallback from "utils/objToCallback";
+import clientInfoMessage from "messages/client-info.message";
 
 @Injectable()
-export class BotService {
+export class ClientService {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
         @InjectRepository(Client) private clientRepository: Repository<Client>,
-        @InjectRepository(Plan) private planRepository: Repository<Plan>,
         @InjectBot() private readonly bot: Telegraf<Context>,
     ) { }
 
@@ -47,7 +47,7 @@ export class BotService {
                 newClient.fullName = ctx.session.createClientInfo.fullName;
                 newClient.birthDate = ctx.session.createClientInfo.birthDate;
                 newClient.phone = ctx.session.createClientInfo.phone;
-                newClient.creator = creator || null;
+                newClient.user = creator || null;
 
                 await this.clientRepository.save(newClient);
 
@@ -71,7 +71,7 @@ export class BotService {
                 newClient.fullName = ctx.session.createClientInfo.fullName;
                 newClient.birthDate = ctx.session.createClientInfo.birthDate;
                 newClient.phone = ctx.session.createClientInfo.phone;
-                newClient.creator = creator || null;
+                newClient.user = creator || null;
                 newClient.images = ctx.session.createClientInfo.images.length ? JSON.stringify({ documents: ctx.session.createClientInfo.images }) : null;
 
                 await this.clientRepository.save(newClient);
@@ -82,17 +82,17 @@ export class BotService {
         }
     }
 
-    async getMyClients(ctx: CustomContext) {
+    async getClientsCreatedByMe(ctx: CustomContext) {
         const params = callbackToObj(ctx.update.callback_query.data) as {
             page: string;
         };
 
 
-        const creator = await this.userRepository.findOne({ where: { id: ctx.callbackQuery.from.id } })
+        const user = await this.userRepository.findOne({ where: { id: ctx.callbackQuery.from.id } })
 
-        if ((!creator && ctx.callbackQuery.from.id === +config().tg.admin) || creator) {
+        if ((!user && ctx.callbackQuery.from.id === +config().tg.admin) || user) {
             const clientsPagination = await this.clientRepository.find({
-                where: { creator },
+                where: { user: user },
                 skip: (+params.page - 1) * 10,
                 take: 10,
             })
@@ -102,7 +102,7 @@ export class BotService {
                 ctx.reply('⚠ Записей не найдено')
             } else {
                 ctx.answerCbQuery();
-                ctx.reply('Список клиентов', clientsListButtons(clientsPagination, +params.page))
+                ctx.editMessageText('Список клиентов', clientsListButtons(clientsPagination, +params.page))
             }
         }
     }
@@ -114,6 +114,7 @@ export class BotService {
             phone: null,
         }
 
+        ctx.answerCbQuery();
         ctx.reply('Введите ФИО пользователя для поиска (или точку если ищете по номеру телефона)')
     }
 
@@ -152,8 +153,8 @@ export class BotService {
         }
     }
 
-    async onChangeClientSearchPage (ctx: CustomContext) {
-        const params = callbackToObj(ctx.update.callback_query.data) as { 
+    async onChangeClientSearchPage(ctx: CustomContext) {
+        const params = callbackToObj(ctx.update.callback_query.data) as {
             page: string,
             fullName: string;
             phone: string;
@@ -164,20 +165,33 @@ export class BotService {
             phone: params.phone,
         }
 
-            const clientsPagination = await this.clientRepository.find({
-                where: {
-                    fullName: searchingObj.fullName ? ILike(`%${searchingObj.fullName}%`) : undefined,
-                    phone: searchingObj.phone ? ILike(`%${searchingObj.phone}%`) : undefined,
-                },
-                skip: (+params.page - 1) * 10,
-                take: 10,
-            })
+        const clientsPagination = await this.clientRepository.find({
+            where: {
+                fullName: searchingObj.fullName ? ILike(`%${searchingObj.fullName}%`) : undefined,
+                phone: searchingObj.phone ? ILike(`%${searchingObj.phone}%`) : undefined,
+            },
+            skip: (+params.page - 1) * 10,
+            take: 10,
+        })
 
-            if (clientsPagination.length === 0) {
-                ctx.reply('⚠ Записей не найдено')
-            } else {
-                ctx.reply('Список пользователей', searchClientsList(clientsPagination, +params.page, objToCallback(searchingObj)))
-            }
+        if (clientsPagination.length === 0) {
+            ctx.reply('⚠ Записей не найдено')
+        } else {
+            ctx.reply('Список пользователей', searchClientsList(clientsPagination, +params.page, objToCallback(searchingObj)))
+        }
+    }
+
+    async getClientInfo (ctx: CustomContext) {
+        const params = callbackToObj(ctx.update.callback_query.data) as {
+            id: string;
+        }
+
+        const requestedClient = await this.clientRepository.findOne({
+            where: {id: +params.id}
+        })
+
+        ctx.answerCbQuery();
+        ctx.editMessageText(clientInfoMessage(requestedClient), clientControlButtons(requestedClient.id, +ctx.from.id))
     }
 
 }
