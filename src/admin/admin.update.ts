@@ -1,5 +1,5 @@
 import { Action, Ctx, InjectBot, On, Update } from 'nestjs-telegraf';
-import { AdminCallbacks } from 'enums/callbacks.enum';
+import { AdminCallbacks, CommonCallbacks } from 'enums/callbacks.enum';
 import { CustomContext } from 'types/context';
 import { AdminService } from './admin.service';
 import { Context, Telegraf } from 'telegraf';
@@ -12,7 +12,7 @@ export class AdminUpdate {
   ) { }
 
   // Join requests actions
-  // ---------------------
+  // -------------------------------------------------------------------------------------------------------
   @Action(new RegExp(AdminCallbacks.GetJoinRequests))
   async getJoinRequests(@Ctx() ctx: CustomContext) {
     this.adminsService.getJoinRequests(ctx);
@@ -44,7 +44,7 @@ export class AdminUpdate {
   }
 
   // Moderators actions
-  // ------------------
+  // ------------------------------------------------------------------------------------------------------
   @Action(AdminCallbacks.ControlModerators)
   async controlModerators(@Ctx() ctx: CustomContext) {
     this.adminsService.controlModerators(ctx)
@@ -69,9 +69,9 @@ export class AdminUpdate {
   async degradeToUser(@Ctx() ctx: CustomContext) {
     this.adminsService.degradeModeratorToUser(ctx);
   }
-
+  
   // Users actions
-  // -------------
+  // ------------------------------------------------------------------------------------------------------
   @Action(AdminCallbacks.ControlUsers)
   async controlUsers(@Ctx() ctx: CustomContext) {
     this.adminsService.controlUsers(ctx)

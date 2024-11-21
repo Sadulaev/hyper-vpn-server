@@ -3,16 +3,16 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { InjectBot } from "nestjs-telegraf";
 import config from "src/config";
 import { Client } from "src/client/client.entity";
-import { Plan } from "src/plan/plan.entity";
 import { User } from "src/user/user.entity";
 import { Context, Telegraf } from "telegraf";
 import { ILike, Repository } from "typeorm";
 import { CustomContext } from "types/context";
 import callbackToObj from "utils/callbackToObj";
 import saveFileFromTG from "utils/saveFileFromTG";
-import { clientControlButtons, clientsListButtons, searchClientsList } from "./client.buttons";
-import objToCallback from "utils/objToCallback";
 import clientInfoMessage from "messages/client-info.message";
+import inlineButtonsPages from "button-templates/inlineButtonsPages";
+import { CommonCallbacks } from "enums/callbacks.enum";
+import inlineButtonsList from "button-templates/inlineButtonsList";
 
 @Injectable()
 export class ClientService {
@@ -82,7 +82,7 @@ export class ClientService {
         }
     }
 
-    async getClientsCreatedByMe(ctx: CustomContext) {
+    async getMyClients(ctx: CustomContext) {
         const params = callbackToObj(ctx.update.callback_query.data) as {
             page: string;
         };
@@ -101,8 +101,16 @@ export class ClientService {
                 ctx.answerCbQuery();
                 ctx.reply('⚠ Записей не найдено')
             } else {
+
+                const clientsListButtons = inlineButtonsPages(
+                    clientsPagination.map(client => (
+                        { text: `👨‍💼 ${client.fullName} | ${new Date(client.birthDate).toLocaleDateString()}`, callback: CommonCallbacks.GetClient, payload: { id: client.id } }
+                    )),
+                    {callback: CommonCallbacks.GetMyClients, page: +params.page, take: 10}
+                )
+
                 ctx.answerCbQuery();
-                ctx.editMessageText('Список клиентов', clientsListButtons(clientsPagination, +params.page))
+                ctx.editMessageText('Список клиентов', clientsListButtons)
             }
         }
     }
@@ -146,7 +154,14 @@ export class ClientService {
             if (clientsPagination.length === 0) {
                 ctx.reply('⚠ Записей не найдено')
             } else {
-                ctx.reply('Список пользователей', searchClientsList(clientsPagination, 1, objToCallback(searchingObj)))
+                const searchClientsList = inlineButtonsPages(
+                    clientsPagination.map(client => (
+                        {text: `👨‍💼 ${client.fullName} | ${new Date(client.birthDate).toLocaleDateString()}`, callback: CommonCallbacks.GetClient, payload: { id: client.id}}
+                    )),
+                    {callback: CommonCallbacks.ChangeSearchClientPage, payload: searchingObj, page: 1, take: 10 }
+                )
+
+                ctx.reply('Список пользователей', searchClientsList)
             }
 
             ctx.session.searchClientInfo = undefined;
@@ -175,23 +190,73 @@ export class ClientService {
         })
 
         if (clientsPagination.length === 0) {
+            ctx.answerCbQuery();
             ctx.reply('⚠ Записей не найдено')
         } else {
-            ctx.reply('Список пользователей', searchClientsList(clientsPagination, +params.page, objToCallback(searchingObj)))
+
+            const searchClientsList = inlineButtonsPages(
+                clientsPagination.map(client => (
+                    {text: `👨‍💼 ${client.fullName} | ${new Date(client.birthDate).toLocaleDateString()}`, callback: CommonCallbacks.GetClient, payload: { id: client.id}}
+                )),
+                {callback: CommonCallbacks.ChangeSearchClientPage, payload: searchingObj, page: +params.page, take: 10 }
+            )
+
+            ctx.answerCbQuery();
+            ctx.reply('Список пользователей', searchClientsList)
         }
     }
 
-    async getClientInfo (ctx: CustomContext) {
+    async getClientInfo(ctx: CustomContext) {
         const params = callbackToObj(ctx.update.callback_query.data) as {
             id: string;
         }
 
         const requestedClient = await this.clientRepository.findOne({
-            where: {id: +params.id}
+            where: { id: +params.id }
         })
 
+        const clientControlButtons = inlineButtonsList([
+            {text: '🧑 Проверить паспортные данные клиента', callback: CommonCallbacks.GetClientPassportImages, payload: {clientId: requestedClient.id}},
+            {text: '🤝 Мои рассрочки пользователя',  callback: CommonCallbacks.GetMyPlansOfClient, payload: {clientId: requestedClient.id, userId: ctx.from.id}},
+            {text: '🤝 Все рассрочки пользователя', callback: CommonCallbacks.GetAllClientPlans, payload: {page: 1, clientId: requestedClient.id}},
+            {text: '➕ Добавить рассрочку пользователю', callback: CommonCallbacks.CreatePlanToClient, payload: {clientId: requestedClient.id, userId: ctx.from.id}},
+        ])
+
         ctx.answerCbQuery();
-        ctx.editMessageText(clientInfoMessage(requestedClient), clientControlButtons(requestedClient.id, +ctx.from.id))
+        ctx.editMessageText(clientInfoMessage(requestedClient), clientControlButtons)
+    }
+
+
+    async getClientsByUserId(ctx: CustomContext) {
+        const params = callbackToObj(ctx.update.callback_query.data) as {
+            id: string;
+            page: string;
+        }
+
+        const user = await this.userRepository.findOne({ where: { id: +params.id } })
+
+        const clientsPagination = await this.clientRepository.find({ where: { user } })
+
+        if (clientsPagination.length === 0) {
+            ctx.answerCbQuery();
+            ctx.reply('⚠ Записей не найдено')
+        } else {
+
+            const clientPaginationButtons = inlineButtonsPages(
+                clientsPagination.map(client => (
+                    { text: client.fullName, callback: CommonCallbacks.GetClient, payload: { id: client.id } }
+                )),
+                {
+                    callback: CommonCallbacks.GetClientsByUserId,
+                    payload: { id: +params.id },
+                    page: +params.page,
+                    take: 10
+                }
+            )
+
+            ctx.answerCbQuery();
+            ctx.editMessageText('Список забаненных пользователей', clientPaginationButtons)
+        }
     }
 
 }

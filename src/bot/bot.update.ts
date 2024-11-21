@@ -1,7 +1,6 @@
-import { Action, Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
+import { Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
 import { AdminService } from "src/admin/admin.service";
 import { AuthService } from "src/auth/auth.service";
-import config from "src/config";
 import { UserRole } from "enums/roles.enum";
 import { CustomContext } from "types/context";
 import { UserService } from "src/user/user.service";

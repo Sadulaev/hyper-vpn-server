@@ -15,7 +15,6 @@ export enum AdminCallbacks {
   DegradeToUser = 'admin_degrade-to-user',
 
   // Users feature
-  GetUserClients = 'admin_get-user-clients',
   BanUser = 'admin_ban-user',
   UnbanUser = 'admin_unban-user',
   GetBansList = 'admin_get-bans',
@@ -25,9 +24,6 @@ export enum AdminCallbacks {
   ChangeUserSearchPage = 'admin_change-user-search-page',
   GetUsersList = 'admin_users-list',
   ControlUsers = 'admin_control-users',
-
-  // Clients feature
-  GetRecords = 'admin_get-records',
 }
 
 export enum ModeratorCallbacks {
@@ -48,9 +44,6 @@ export enum ModeratorCallbacks {
   FindUser = 'moderator_find-user',
   GetUsersList = 'moderator_users-list',
   ControlUsers = 'moderator_control-users',
-
-  // Clients feature
-  GetRecords = 'moderator_get-records',
 }
 
 
@@ -75,7 +68,8 @@ export enum CommonCallbacks {
   CreatePlanWithExpiredStatus = 'create-plan-with-expired-status',
   CreatePlanWithFreezedStatus = 'create-plan-with-freezed-status',
   CreatePlanWithClosedStatus = 'create-plan-with-freezed-status',
-  ChangePlanPaymentStatus = 'change-plan-payment-status'
+  ChangePlanPaymentStatus = 'change-plan-payment-status',
+  GetClientsByUserId = 'get-clients-by-user-id'
 }
 
 export enum DefaultCallbacks {

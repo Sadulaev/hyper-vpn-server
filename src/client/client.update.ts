@@ -1,11 +1,5 @@
-import { Action, Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
-import { AdminService } from "src/admin/admin.service";
-import { AuthService } from "src/auth/auth.service";
-import config from "src/config";
-import { UserRole } from "enums/roles.enum";
+import { Action, Ctx, Update } from "nestjs-telegraf";
 import { CustomContext } from "types/context";
-import { UserService } from "src/user/user.service";
-import { Context, Telegraf } from "telegraf";
 import { CommonCallbacks } from "enums/callbacks.enum";
 import { Inject } from "@nestjs/common";
 import { ClientService } from "./client.service";
@@ -18,7 +12,7 @@ export class ClientUpdate {
     
     @Action(new RegExp(CommonCallbacks.GetMyClients))
     async getClientsCreatedByMe(@Ctx() ctx: CustomContext) {
-        await this.clientService.getClientsCreatedByMe(ctx);
+        await this.clientService.getMyClients(ctx);
     }
 
     @Action(CommonCallbacks.FindClients)
@@ -34,5 +28,10 @@ export class ClientUpdate {
     @Action(new RegExp(CommonCallbacks.GetClient))
     async getClientInfo(@Ctx() ctx: CustomContext) {
         await this.clientService.getClientInfo(ctx);
+    }
+
+    @Action(new RegExp(CommonCallbacks.GetClientsByUserId))
+    async getClientsByUserId(@Ctx() ctx: CustomContext) {
+        await this.clientService.getClientsByUserId(ctx);
     }
 }

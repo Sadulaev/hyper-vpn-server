@@ -10,7 +10,7 @@ import { UserRole } from 'enums/roles.enum';
 import requestMessage from 'messages/request.message';
 import { requestControlButtons } from 'src/auth/auth.buttons';
 import userInfoMessage from 'messages/user-info.message';
-import { AdminCallbacks } from 'enums/callbacks.enum';
+import { AdminCallbacks, CommonCallbacks } from 'enums/callbacks.enum';
 import inlineButtonsPages from 'button-templates/inlineButtonsPages';
 import inlineButtonsList from 'button-templates/inlineButtonsList';
 
@@ -22,6 +22,9 @@ export class AdminService {
   ) { }
 
   // Join requests services
+  // Функционал относящийся к запросам на вступление
+  // -------------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------------------------------------------
   async getJoinRequests(ctx: CustomContext) {
     const params = callbackToObj(ctx.update.callback_query.data) as {
       page: string;
@@ -110,6 +113,9 @@ export class AdminService {
 
 
   // Moderators services
+  // Функционал относящийся к модераторам
+  // -------------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------------------------------------------
   async controlModerators(ctx: CustomContext) {
     ctx.answerCbQuery();
 
@@ -247,7 +253,7 @@ export class AdminService {
     const user = await this.usersRepository.findOne({ where: { id: +params.id } })
 
     const buttons = inlineButtonsList([
-      { text: 'Список клиентов модератора', callback: AdminCallbacks.GetUserClients, payload: { id: +params.id } },
+      { text: 'Список клиентов модератора', callback: CommonCallbacks.GetClientsByUserId, payload: { id: +params.id } },
       { text: 'Сделать модератора обычным пользователем', callback: AdminCallbacks.DegradeToUser, payload: { id: +params.id } },
       { text: 'Забанить пользователя', callback: AdminCallbacks.BanUser, payload: { id: +params.id } }
     ])
@@ -273,6 +279,9 @@ export class AdminService {
   }
 
   // Users services
+  // Функционал относящийся к пользователям
+  // -------------------------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------------------------------------------
   async controlUsers(ctx: CustomContext) {
     ctx.answerCbQuery();
 
@@ -422,9 +431,9 @@ export class AdminService {
     const user = await this.usersRepository.findOne({ where: { id: +params.id } });
 
     const buttons = inlineButtonsList([
-      {text: 'Список клиентов пользователя', callback: AdminCallbacks.GetUserClients, payload: {id: +params.id}},
-      {text: 'Сделать пользователя модератором', callback: AdminCallbacks.UpgradeToModerator, payload: {id: +params.id}},
-      {text: 'Забанить пользователя', callback: AdminCallbacks.BanUser, payload: {id: +params.id}},
+      { text: 'Список клиентов пользователя', callback: CommonCallbacks.GetClientsByUserId, payload: { id: +params.id } },
+      { text: 'Сделать пользователя модератором', callback: AdminCallbacks.UpgradeToModerator, payload: { id: +params.id } },
+      { text: 'Забанить пользователя', callback: AdminCallbacks.BanUser, payload: { id: +params.id } },
     ])
 
     ctx.answerCbQuery();
@@ -493,7 +502,7 @@ export class AdminService {
       const button = [
         { text: 'Разбанить пользователя', callback: AdminCallbacks.UnbanUser, payload: { id: bannedUser.id } }
       ]
-  
+
       ctx.answerCbQuery();
       ctx.editMessageText(requestMessage(bannedUser), inlineButtonsList(button));
     } else {

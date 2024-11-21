@@ -3,7 +3,6 @@ import {
   CommonCallbacks,
   DefaultCallbacks,
   ModeratorCallbacks,
-  UserCallbacks,
 } from 'enums/callbacks.enum';
 import { Markup } from 'telegraf';
 
@@ -22,7 +21,7 @@ export function adminMainButtons() {
         '👨‍💼 Забаненные пользователи',
         `${AdminCallbacks.GetBansList}&page-1`,
       ),
-      Markup.button.callback('✔ Записи о клиентах', AdminCallbacks.GetRecords),
+      Markup.button.callback('✔ Записи о клиентах', CommonCallbacks.GetMyClients),
       Markup.button.callback(
         '🔑 Активные запросы на вступление',
         `${AdminCallbacks.GetJoinRequests}&page-1`,
@@ -48,7 +47,7 @@ export function moderatorMainButtons() {
     ),
     Markup.button.callback(
       '✔ Записи о клиентах',
-      ModeratorCallbacks.GetRecords,
+      CommonCallbacks.GetMyClients,
     ),
   ], { columns: 1 });
 }

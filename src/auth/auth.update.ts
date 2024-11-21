@@ -1,10 +1,7 @@
 import {
   Action,
-  Command,
   Ctx,
   InjectBot,
-  On,
-  Start,
   Update,
 } from 'nestjs-telegraf';
 import { Context, Telegraf } from 'telegraf';
