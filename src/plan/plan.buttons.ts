@@ -37,9 +37,14 @@ export const myClientPlansButtons = (plans: Plan[], page: number, clientId: stri
     );
 }
 
-export const planButtons = (planId: number ) => {
-    return Markup.inlineKeyboard([
-        Markup.button.callback('Посмотреть информацию о предоставившем рассрочку', `${CommonCallbacks.GetPlanCreator}&id-${planId}`)
-        // Markup.button.callback('Посмотреть информацию о предоставившем рассрочку', `${CommonCallbacks.GetPlanCreator}&id-${planId}`)
-    ])
+export const planButtons = (plan: Plan, currentUserId: number) => {
+    if (plan.user.id === currentUserId) {
+        return Markup.inlineKeyboard([
+            Markup.button.callback('Поменять статус рассрочки', `${CommonCallbacks.ChangePlanPaymentStatus}&id-${plan.id}`)
+        ])
+    } else {
+        return Markup.inlineKeyboard([
+            Markup.button.callback('Посмотреть информацию о предоставившем рассрочку', `${CommonCallbacks.GetPlanCreator}&id-${plan.id}`),
+        ]) 
+    }
 }

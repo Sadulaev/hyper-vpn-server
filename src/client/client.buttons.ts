@@ -57,9 +57,8 @@ export const searchClientsList = (clients: Client[], page: number, callback: str
 export const clientControlButtons = (clientId: number, userId: number) => {
     return Markup.inlineKeyboard([
         Markup.button.callback('🧑 Проверить паспортные данные клиента', `${CommonCallbacks.GetClientPassportImages}&clientId-${clientId}`),
-        Markup.button.callback('🤝 Мои рассрочки пользователя', `${CommonCallbacks.GetMyPlansOfClient}&clientId-${clientId}&userId-${userId}`),
-        Markup.button.callback('📄 Мои рассрочки пользователя (PDF)', `${CommonCallbacks.GetMyPlansOfClientPDF}&clientId-${clientId}&userId-${userId}`),
-        Markup.button.callback('📃 Все рассрочки пользователя (PDF)', `${CommonCallbacks.GetAllClientPlansPDF}&clientId-${clientId}&userId-${userId}`),
+        Markup.button.callback('🤝 Мои рассрочки пользователя', `${CommonCallbacks.GetMyPlansOfClient}&clientId-${clientId}&userId-${userId}&page-1`),
+        Markup.button.callback('🤝 Все рассрочки пользователя', `${CommonCallbacks.GetAllClientPlans}&page-1`),
         Markup.button.callback('➕ Добавить рассрочку пользователю', `${CommonCallbacks.CreatePlanToClient}&clientId-${clientId}&userId-${userId}`)
     ], {columns: 1})
 }

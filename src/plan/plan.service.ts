@@ -10,6 +10,8 @@ import { User } from "src/user/user.entity";
 import { Client } from "src/client/client.entity";
 import callbackToObj from "utils/callbackToObj";
 import planInfoMessage from "messages/plan-info.message";
+import { CommonCallbacks } from "enums/callbacks.enum";
+import inlineButtonsList from "button-templates/inlineButtonsList";
 
 @Injectable()
 export class PlanService {
@@ -47,22 +49,22 @@ export class PlanService {
                 ctx.session.createPlanInfo.step = 'description';
 
                 ctx.reply('Опишите предоставленную расрочку. Укажите товары и дополнительную информацию, если она есть')
-            } else if (ctx.session.createPlanInfo.step = 'description') {
+            } else if (ctx.session.createPlanInfo.step === 'description') {
                 ctx.session.createPlanInfo.description = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'sum';
 
                 ctx.reply('Укажите общую сумму рассрочки')
-            } else if (ctx.session.createPlanInfo.step = 'sum') {
+            } else if (ctx.session.createPlanInfo.step === 'sum') {
                 ctx.session.createPlanInfo.sum = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'startDate';
 
                 ctx.reply('Укажите дату начала рассрочки в формате дд.мм.гггг')
-            } else if (ctx.session.createPlanInfo.step = 'startDate') {
+            } else if (ctx.session.createPlanInfo.step === 'startDate') {
                 ctx.session.createPlanInfo.startDate = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'endDate';
 
                 ctx.reply('Укажите дату окончания рассрочки в формате дд.мм.гггг')
-            } else if (ctx.session.createPlanInfo.step = 'endDate') {
+            } else if (ctx.session.createPlanInfo.step === 'endDate') {
                 ctx.session.createPlanInfo.startDate = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'paymentStatus';
 
@@ -89,39 +91,40 @@ export class PlanService {
 
         await this.planRepository.save(newPlan);
 
-        ctx.reply('Рассрочка была успешно создана');
+        ctx.answerCbQuery();
+        ctx.editMessageText('Рассрочка была успешно создана');
         ctx.session = {};
     }
 
     async onCreateActivePlan(ctx: CustomContext) {
-        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo === 'paymentStatus') {
+        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo.step === 'paymentStatus') {
             ctx.session.createPlanInfo.paymentStatus = PaymentStatus.Active;
 
-            this.createPlan(ctx);
+            await this.createPlan(ctx);
         }
     }
 
     async onCreateExpiredPlan(ctx: CustomContext) {
-        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo === 'paymentStatus') {
+        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo.step === 'paymentStatus') {
             ctx.session.createPlanInfo.paymentStatus = PaymentStatus.Expired;
 
-            this.createPlan(ctx);
+            await this.createPlan(ctx);
         }
     }
 
     async onCreateFreezedPlan(ctx: CustomContext) {
-        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo === 'paymentStatus') {
+        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo.step === 'paymentStatus') {
             ctx.session.createPlanInfo.paymentStatus = PaymentStatus.Freezed;
 
-            this.createPlan(ctx);
+            await this.createPlan(ctx);
         }
     }
 
     async onCreateClosedPlan(ctx: CustomContext) {
-        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo === 'paymentStatus') {
+        if (ctx.session.createPlanInfo && ctx.session.createPlanInfo.step === 'paymentStatus') {
             ctx.session.createPlanInfo.paymentStatus = PaymentStatus.Closed;
 
-            this.createPlan(ctx);
+            await this.createPlan(ctx);
         }
     }
 
@@ -136,7 +139,7 @@ export class PlanService {
         const client = await this.clientRepository.findOne({ where: { id: +params.clientId } });
 
         const moderatorsByPagination = await this.planRepository.find({
-            where: { user, client },
+            // where: { user, client },
             skip: (+params.page - 1) * 10,
             take: 10,
         })
@@ -153,8 +156,12 @@ export class PlanService {
     async getPlanById(ctx: CustomContext) {
         const params = callbackToObj(ctx.update.callback_query.data) as { id: string }
 
-        const plan = await this.planRepository.findOne({where: {id: +params.id}})
+        const plan = await this.planRepository.findOne({ where: { id: +params.id }, relations: ['user'] })
 
-        ctx.reply(planInfoMessage(plan), planButtons(plan.id))
+        const buttons = [
+            { text: 'Проверка новых кнопок', callback: CommonCallbacks.GetMyClients, payload: { page: 1 } }
+        ]
+
+        ctx.editMessageText(planInfoMessage(plan), inlineButtonsList(buttons))
     }
 }

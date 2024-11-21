@@ -56,7 +56,7 @@ export function moderatorMainButtons() {
 export function usersMainButtons() {
   return Markup.inlineKeyboard([
     Markup.button.callback(
-      '🔍 Поиск клинта по базе',
+      '🔍 Поиск клиента по базе',
       CommonCallbacks.FindClients,
     ),
     Markup.button.callback(

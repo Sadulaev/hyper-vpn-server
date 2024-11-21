@@ -6,14 +6,13 @@ import { User } from 'src/user/user.entity';
 import { Context, Telegraf } from 'telegraf';
 import { ILike, Like, Repository } from 'typeorm';
 import callbackToObj from 'utils/callbackToObj';
-import { banControlButtons, bansListButtons, controlModeratorsButtons, controlUsersButtons, joinRequestsButtons, moderatorControlButtons, moderatorsListButtons, searchUsersListButtons, userControlButtons, usersListButtons } from './admin.buttons';
 import { UserRole } from 'enums/roles.enum';
 import requestMessage from 'messages/request.message';
 import { requestControlButtons } from 'src/auth/auth.buttons';
-import deleteLastMessage from 'utils/deleteLastMessage';
 import userInfoMessage from 'messages/user-info.message';
 import { AdminCallbacks } from 'enums/callbacks.enum';
-import objToCallback from 'utils/objToCallback';
+import inlineButtonsPages from 'button-templates/inlineButtonsPages';
+import inlineButtonsList from 'button-templates/inlineButtonsList';
 
 @Injectable()
 export class AdminService {
@@ -38,10 +37,18 @@ export class AdminService {
       ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
+
+      const buttons = inlineButtonsPages(
+        usersByPagination.map(user => (
+          { text: user.name, callback: AdminCallbacks.GetOneJoinRequest, payload: { id: user.id } }
+        )),
+        { callback: AdminCallbacks.GetJoinRequests, page: +params.page, take: 10 }
+      )
+
       ctx.answerCbQuery();
       ctx.editMessageText(
         'Выберите из списка заявку',
-        joinRequestsButtons(usersByPagination, +params.page),
+        buttons
       );
     }
   }
@@ -105,7 +112,13 @@ export class AdminService {
   // Moderators services
   async controlModerators(ctx: CustomContext) {
     ctx.answerCbQuery();
-    ctx.editMessageText('Выберите действие', controlModeratorsButtons())
+
+    const buttons = inlineButtonsList([
+      { text: 'Cписок модераторов', callback: AdminCallbacks.GetModeratorsList, payload: { page: 1 } },
+      { text: 'Найти модератора', callback: AdminCallbacks.FindModerator }
+    ])
+
+    ctx.editMessageText('Выберите действие', buttons)
   }
 
 
@@ -128,8 +141,16 @@ export class AdminService {
       ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
+
+      const buttons = inlineButtonsPages(
+        moderatorsByPagination.map(mod => (
+          { text: mod.name, callback: AdminCallbacks.GetModerator, payload: { id: mod.id } }
+        )),
+        { callback: AdminCallbacks.GetModeratorsList, page: +params.page, take: 10 }
+      )
+
       ctx.answerCbQuery();
-      ctx.editMessageText('Список модераторов', moderatorsListButtons(moderatorsByPagination, +params.page))
+      ctx.editMessageText('Список модераторов', buttons)
     }
   }
 
@@ -163,7 +184,15 @@ export class AdminService {
         if (moderatorsByPagination.length === 0) {
           ctx.reply('⚠ Записей не найдено')
         } else {
-          ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, 1))
+
+          const buttons = inlineButtonsPages(
+            moderatorsByPagination.map(mod => (
+              { text: mod.name, callback: AdminCallbacks.GetModerator, payload: { id: mod.id } }
+            )),
+            { callback: AdminCallbacks.GetModeratorsList, page: 1, take: 10 }
+          )
+
+          ctx.reply('Список найденных модераторов', buttons)
         }
 
         ctx.session.searchModeratorsByName = undefined;
@@ -171,27 +200,34 @@ export class AdminService {
     }
   }
 
-  async onChangeModeratorSearchPage(ctx: CustomContext) {
-    const params = callbackToObj(ctx.update.callback_query.data) as {
-      page: string;
-      name: string;
-    }
+  // async onChangeModeratorSearchPage(ctx: CustomContext) {
+  //   const params = callbackToObj(ctx.update.callback_query.data) as {
+  //     page: string;
+  //     name: string;
+  //   }
 
-    const moderatorsByPagination = await this.usersRepository.find({
-      where: {
-        name: params.name ? Like(`%${params.name}%`) : undefined,
-        role: UserRole.Moderator
-      },
-      skip: (+params.page - 1) * 10,
-      take: 10,
-    })
+  //   const moderatorsByPagination = await this.usersRepository.find({
+  //     where: {
+  //       name: params.name ? Like(`%${params.name}%`) : undefined,
+  //       role: UserRole.Moderator
+  //     },
+  //     skip: (+params.page - 1) * 10,
+  //     take: 10,
+  //   })
 
-    if (moderatorsByPagination.length === 0) {
-      ctx.reply('⚠ Записей не найдено')
-    } else {
-      ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, +params.page))
-    }
-  }
+  //   const buttons = inlineButtonsPages(
+  //     moderatorsByPagination.map(mod => (
+  //       { text: mod.name, callback: AdminCallbacks.GetModerator, payload: { id: mod.id } }
+  //     )),
+  //     { callback: AdminCallbacks.GetModeratorsList, page: 1, take: 10 }
+  //   )
+
+  //   if (moderatorsByPagination.length === 0) {
+  //     ctx.reply('⚠ Записей не найдено')
+  //   } else {
+  //     ctx.reply('Список найденных модераторов', moderatorsListButtons(moderatorsByPagination, +params.page))
+  //   }
+  // }
 
   async banModerator(ctx: CustomContext) {
     const params = callbackToObj(ctx.update.callback_query.data) as {
@@ -210,8 +246,14 @@ export class AdminService {
 
     const user = await this.usersRepository.findOne({ where: { id: +params.id } })
 
+    const buttons = inlineButtonsList([
+      { text: 'Список клиентов модератора', callback: AdminCallbacks.GetUserClients, payload: { id: +params.id } },
+      { text: 'Сделать модератора обычным пользователем', callback: AdminCallbacks.DegradeToUser, payload: { id: +params.id } },
+      { text: 'Забанить пользователя', callback: AdminCallbacks.BanUser, payload: { id: +params.id } }
+    ])
+
     ctx.answerCbQuery();
-    ctx.editMessageText(userInfoMessage(user), moderatorControlButtons(user.id))
+    ctx.editMessageText(userInfoMessage(user), buttons)
   }
 
   async degradeModeratorToUser(ctx: CustomContext) {
@@ -233,7 +275,13 @@ export class AdminService {
   // Users services
   async controlUsers(ctx: CustomContext) {
     ctx.answerCbQuery();
-    ctx.editMessageText('Выберите действие', controlUsersButtons())
+
+    const buttons = inlineButtonsList([
+      { text: 'Cписок пользователей', callback: AdminCallbacks.GetUsersList, payload: { page: 1 } },
+      { text: 'Найти пользователей', callback: AdminCallbacks.FindUser }
+    ])
+
+    ctx.editMessageText('Выберите действие', buttons)
   }
 
   async getUsersList(ctx: CustomContext) {
@@ -247,12 +295,18 @@ export class AdminService {
       take: 10,
     })
 
+    const usersButtons = usersByPagination.map(user => (
+      { text: user.name, callback: AdminCallbacks.GetUser, payload: { id: user.id } }
+    ))
+
+    const usersPagination = { callback: AdminCallbacks.GetUsersList, page: +params.page, take: 10 }
+
     if (usersByPagination.length === 0) {
       ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
       ctx.answerCbQuery();
-      ctx.editMessageText('Список пользователей', usersListButtons(usersByPagination, +params.page))
+      ctx.editMessageText('Список пользователей', inlineButtonsPages(usersButtons, usersPagination))
     }
   }
 
@@ -303,10 +357,15 @@ export class AdminService {
       if (usersByPagination.length === 0) {
         ctx.reply('⚠ Записей не найдено')
       } else {
-        ctx.reply('Список пользователей', searchUsersListButtons(
-          usersByPagination,
-          1,
-          objToCallback(searchingObj)))
+
+        const buttons = inlineButtonsPages(
+          usersByPagination.map(user => (
+            { text: user.name, callback: AdminCallbacks.GetUser, payload: { id: user.id } }
+          )),
+          { callback: AdminCallbacks.ChangeUserSearchPage, payload: searchingObj, page: 1, take: 10 }
+        )
+
+        ctx.reply('Список пользователей', buttons)
 
       }
 
@@ -342,11 +401,16 @@ export class AdminService {
       ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
+
+      const buttons = inlineButtonsPages(
+        usersByPagination.map(user => (
+          { text: user.name, callback: AdminCallbacks.GetUser, payload: { id: user.id } }
+        )),
+        { callback: AdminCallbacks.ChangeUserSearchPage, payload: searchingObj, page: +params.page, take: 10 }
+      )
+
       ctx.answerCbQuery();
-      ctx.editMessageText('Список пользователей', searchUsersListButtons(
-        usersByPagination,
-        +params.page,
-        objToCallback(searchingObj)))
+      ctx.editMessageText('Список пользователей', buttons)
     }
   }
 
@@ -355,10 +419,16 @@ export class AdminService {
       id: string;
     };
 
-    const user = await this.usersRepository.findOne({ where: { id: +params.id } })
+    const user = await this.usersRepository.findOne({ where: { id: +params.id } });
+
+    const buttons = inlineButtonsList([
+      {text: 'Список клиентов пользователя', callback: AdminCallbacks.GetUserClients, payload: {id: +params.id}},
+      {text: 'Сделать пользователя модератором', callback: AdminCallbacks.UpgradeToModerator, payload: {id: +params.id}},
+      {text: 'Забанить пользователя', callback: AdminCallbacks.BanUser, payload: {id: +params.id}},
+    ])
 
     ctx.answerCbQuery();
-    ctx.editMessageText(userInfoMessage(user), userControlButtons(user.id))
+    ctx.editMessageText(userInfoMessage(user), buttons)
   }
 
   async upgradeUserToModerator(ctx: CustomContext) {
@@ -392,8 +462,20 @@ export class AdminService {
       ctx.answerCbQuery();
       ctx.reply('⚠ Записей не найдено')
     } else {
+
+      const bansListButtons = inlineButtonsPages(
+        bansByPagination.map(ban => (
+          { text: ban.name, callback: AdminCallbacks.GetBannedUser, payload: { id: ban.id } }
+        )),
+        {
+          callback: AdminCallbacks.GetBansList,
+          page: +params.page,
+          take: 10
+        }
+      )
+
       ctx.answerCbQuery();
-      ctx.editMessageText('Список забаненных пользователей', bansListButtons(bansByPagination, +params.page))
+      ctx.editMessageText('Список забаненных пользователей', bansListButtons)
     }
   }
 
@@ -407,8 +489,13 @@ export class AdminService {
     });
 
     if (bannedUser) {
+
+      const button = [
+        { text: 'Разбанить пользователя', callback: AdminCallbacks.UnbanUser, payload: { id: bannedUser.id } }
+      ]
+  
       ctx.answerCbQuery();
-      ctx.editMessageText(requestMessage(bannedUser), banControlButtons(+params.id));
+      ctx.editMessageText(requestMessage(bannedUser), inlineButtonsList(button));
     } else {
       ctx.answerCbQuery();
       ctx.reply('Произошла ошибка. Пожалуйста попробуйте снова');

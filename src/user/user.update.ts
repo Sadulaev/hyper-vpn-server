@@ -34,6 +34,23 @@ export class UserUpdate {
     this.planService.getPlanById(ctx);
   }
 
+  @Action(new RegExp(CommonCallbacks.CreatePlanWithActiveStatus))
+  async createActivePlan(@Ctx() ctx: CustomContext) {
+    this.planService.onCreateActivePlan(ctx);
+  }
+  @Action(new RegExp(CommonCallbacks.CreatePlanWithExpiredStatus))
+  async createExpiredPlan(@Ctx() ctx: CustomContext) {
+    this.planService.onCreateExpiredPlan(ctx);
+  }
+  @Action(new RegExp(CommonCallbacks.CreatePlanWithFreezedStatus))
+  async createFreezedPlan(@Ctx() ctx: CustomContext) {
+    this.planService.onCreateFreezedPlan(ctx);
+  }
+  @Action(new RegExp(CommonCallbacks.CreatePlanWithClosedStatus))
+  async createClosedPlan(@Ctx() ctx: CustomContext) {
+    this.planService.onCreateClosedPlan(ctx);
+  }
+
   // @Action(new RegExp(CommonCallbacks.DeletePlan))
   // async deletePlanById(@Ctx() ctx: CustomContext) {
   //   this.planService.deletePlanById(ctx);
