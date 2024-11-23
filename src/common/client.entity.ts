@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "../user/user.entity";
-import { Plan } from "src/plan/plan.entity";
+import { Plan } from "src/common/plan.entity";
 
 @Entity()
 export class Client {

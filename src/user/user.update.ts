@@ -4,7 +4,7 @@ import { UserService } from './user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommonCallbacks, UserCallbacks } from 'enums/callbacks.enum';
 import { CustomContext } from 'types/context';
-import { PlanService } from 'src/plan/plan.service';
+import { PlanService } from 'src/common/plan.service';
 
 @Update()
 export class UserUpdate {
@@ -16,7 +16,7 @@ export class UserUpdate {
 
   @Action(new RegExp(CommonCallbacks.CreateClient)) 
   beginUserCreating (@Ctx() ctx: CustomContext) {
-    this.userService.beginUserCreating(ctx);
+    this.userService.beginClientCreating(ctx);
   }
 
   @Action(new RegExp(CommonCallbacks.CreatePlanToClient))

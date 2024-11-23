@@ -1,7 +1,7 @@
 import { UserRole } from 'enums/roles.enum';
 import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
-import { Client } from '../client/client.entity';
-import { Plan } from 'src/plan/plan.entity';
+import { Client } from '../common/client.entity';
+import { Plan } from 'src/common/plan.entity';
 
 @Entity({ name: 'users' })
 export class User {

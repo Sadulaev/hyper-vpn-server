@@ -4,14 +4,14 @@ import { Plan } from "./plan.entity";
 import { Repository } from "typeorm";
 import { CustomContext } from "types/context";
 import paymentStatusInfoMessage from "messages/payment-status-info.message";
-import { myClientPlansButtons, paymentStatusButtons, planButtons } from "./plan.buttons";
 import { PaymentStatus } from "enums/payment-status.enum";
 import { User } from "src/user/user.entity";
-import { Client } from "src/client/client.entity";
+import { Client } from "src/common/client.entity";
 import callbackToObj from "utils/callbackToObj";
 import planInfoMessage from "messages/plan-info.message";
 import { CommonCallbacks } from "enums/callbacks.enum";
 import inlineButtonsList from "button-templates/inlineButtonsList";
+import inlineButtonsPages from "button-templates/inlineButtonsPages";
 
 @Injectable()
 export class PlanService {
@@ -68,7 +68,14 @@ export class PlanService {
                 ctx.session.createPlanInfo.startDate = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'paymentStatus';
 
-                ctx.reply(`И наконец - укажите статус платежей рассрочки\n\n${paymentStatusInfoMessage()}`, paymentStatusButtons())
+               const buttons = inlineButtonsList([
+                   {text: 'Активна', callback: CommonCallbacks.CreatePlanWithActiveStatus },
+                   {text: 'Просрочена', callback: CommonCallbacks.CreatePlanWithExpiredStatus},
+                   {text: 'Заморожена', callback: CommonCallbacks.CreatePlanWithFreezedStatus},
+                   {text: 'Закрыта', callback: CommonCallbacks.CreatePlanWithClosedStatus},
+                ])
+
+                ctx.reply(`И наконец - укажите статус платежей рассрочки\n\n${paymentStatusInfoMessage()}`, buttons)
             }
         }
     }
@@ -138,18 +145,26 @@ export class PlanService {
         const user = await this.userRepository.findOne({ where: { id: +params.userId } });
         const client = await this.clientRepository.findOne({ where: { id: +params.clientId } });
 
-        const moderatorsByPagination = await this.planRepository.find({
+        const plansByPagination = await this.planRepository.find({
             // where: { user, client },
             skip: (+params.page - 1) * 10,
             take: 10,
         })
 
-        if (moderatorsByPagination.length === 0) {
+        if (plansByPagination.length === 0) {
             ctx.answerCbQuery();
             ctx.reply('⚠ Записей не найдено')
         } else {
+
+            const myClientPlansButtons = inlineButtonsPages(
+                plansByPagination.map(plan => (
+                    { text: plan.title, callback: CommonCallbacks.GetPlan, payload: { id: plan.id } }
+                )),
+                { callback: CommonCallbacks.GetMyPlansOfClient, payload: { clientId: +params.clientId, userId: +params.userId }, page: +params.page, take: 10 }
+            )
+
             ctx.answerCbQuery();
-            ctx.editMessageText(`Список рассрочек для клиента - ${client.fullName}`, myClientPlansButtons(moderatorsByPagination, +params.page, params.clientId, params.userId))
+            ctx.editMessageText(`Список рассрочек для клиента - ${client.fullName}`, myClientPlansButtons)
         }
     }
 
@@ -158,10 +173,12 @@ export class PlanService {
 
         const plan = await this.planRepository.findOne({ where: { id: +params.id }, relations: ['user'] })
 
-        const buttons = [
-            { text: 'Проверка новых кнопок', callback: CommonCallbacks.GetMyClients, payload: { page: 1 } }
-        ]
+        const buttons = inlineButtonsList([
+            { text: 'Поменять статус рассрочки', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { id: plan.id } },
+            { text: 'Посмотреть информацию о предоставившем рассрочку', callback: CommonCallbacks.GetPlanCreator, payload: { id: plan.id } },
 
-        ctx.editMessageText(planInfoMessage(plan), inlineButtonsList(buttons))
+        ])
+
+        ctx.editMessageText(planInfoMessage(plan), buttons)
     }
 }

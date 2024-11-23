@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Client } from "../client/client.entity";
+import { Client } from "./client.entity";
 import { User } from "src/user/user.entity";
 import { PaymentStatus } from "enums/payment-status.enum";
 

@@ -11,13 +11,12 @@ import { AdminModule } from './admin/admin.module';
 import { RolesGuard } from './app.guard';
 import { BotModule } from './bot/bot.module';
 import { ModeratorModule } from './moderator/moderator.module';
-import { Client } from './client/client.entity';
-import { Plan } from './plan/plan.entity';
-import { ClientModule } from './client/client.module';
-import { PlanModule } from './plan/plan.module';
+import { Client } from './common/client.entity';
+import { Plan } from './common/plan.entity';
 import { TelegramExceptionFilter } from './app.filter';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CommonModule } from './common/common.module';
 
 const sessions = new LocalSession({ database: 'session_db.json' })
 
@@ -48,8 +47,7 @@ const sessions = new LocalSession({ database: 'session_db.json' })
     AdminModule,
     ModeratorModule,
     UserModule,
-    ClientModule,
-    PlanModule,
+    CommonModule,
     TypeOrmModule.forFeature([User])
   ],
   providers: [

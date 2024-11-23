@@ -5,7 +5,7 @@ import { Inject } from "@nestjs/common";
 import { ClientService } from "./client.service";
 
 @Update()
-export class ClientUpdate {
+export class CommonUpdate {
     constructor(
         @Inject() private clientService: ClientService
     ) {}

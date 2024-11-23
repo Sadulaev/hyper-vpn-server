@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { InjectBot } from "nestjs-telegraf";
 import config from "src/config";
-import { Client } from "src/client/client.entity";
+import { Client } from "./client.entity";
 import { User } from "src/user/user.entity";
 import { Context, Telegraf } from "telegraf";
 import { ILike, Repository } from "typeorm";

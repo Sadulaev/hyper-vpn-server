@@ -5,8 +5,8 @@ import { UserRole } from "enums/roles.enum";
 import { CustomContext } from "types/context";
 import { UserService } from "src/user/user.service";
 import { Context, Telegraf } from "telegraf";
-import { ClientService } from "src/client/client.service";
-import { PlanService } from "src/plan/plan.service";
+import { ClientService } from "src/common/client.service";
+import { PlanService } from "src/common/plan.service";
 
 @Update()
 export class BotUpdate {

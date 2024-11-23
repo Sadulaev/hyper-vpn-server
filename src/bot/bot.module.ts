@@ -9,10 +9,10 @@ import { User } from "src/user/user.entity";
 import { UserModule } from "src/user/user.module";
 import { UserService } from "src/user/user.service";
 import { BotUpdate } from "./bot.update";
-import { Client } from "src/client/client.entity";
-import { Plan } from "src/plan/plan.entity";
-import { ClientService } from "src/client/client.service";
-import { PlanService } from "src/plan/plan.service";
+import { Client } from "src/common/client.entity";
+import { Plan } from "src/common/plan.entity";
+import { ClientService } from "src/common/client.service";
+import { PlanService } from "src/common/plan.service";
 
 @Module({
     imports: [AuthModule, AdminModule, UserModule, ConfigModule, TypeOrmModule.forFeature([User, Client, Plan])],
