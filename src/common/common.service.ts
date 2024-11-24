@@ -409,7 +409,7 @@ export class CommonService {
 
                 ctx.reply('Укажите дату окончания рассрочки в формате дд.мм.гггг')
             } else if (ctx.session.createPlanInfo.step === 'endDate') {
-                ctx.session.createPlanInfo.startDate = ctx.message.text;
+                ctx.session.createPlanInfo.endDate = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'paymentStatus';
 
                 const buttons = inlineButtonsList([
@@ -522,12 +522,12 @@ export class CommonService {
 
         const plan = await this.planRepository.findOne({ where: { id: +params.id }, relations: ['user'] })
 
-        const isMyClientsPlan = ctx.from.id === plan.user.id;
-        const isEditable = (ctx.from.id === +this.configService.get<string>('tg.admin')) || isMyClientsPlan;
+
+        const isMyPlan = ctx.from.id === +plan.user.id;
 
         const buttons = inlineButtonsList([
-            { text: 'Поменять статус рассрочки', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { id: plan.id }, hide: !isEditable },
-            { text: 'Посмотреть информацию о предоставившем рассрочку', callback: CommonCallbacks.GetUserById, payload: { id: plan.user.id }, hide: isMyClientsPlan },
+            { text: 'Поменять статус рассрочки', callback: CommonCallbacks.GetPaymentStatusMenu, payload: { planId: plan.id }, hide: !isMyPlan },
+            { text: 'Посмотреть информацию о предоставившем рассрочку', callback: CommonCallbacks.GetUserById, payload: { id: plan.user.id }, hide: isMyPlan },
 
         ])
 
@@ -560,6 +560,43 @@ export class CommonService {
             ctx.answerCbQuery();
             ctx.editMessageText(`Ваши рассрочки`, clientPlansButtons)
         }
+    }
+
+    async getPaymentStatusMenu(ctx: CustomContext) {
+        const params = callbackToObj(ctx.update.callback_query.data) as { planId: string };
+
+       const buttons = inlineButtonsList([
+            { text: 'Активна', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Active, planId: +params.planId} },
+            { text: 'Просрочена', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Expired, planId: +params.planId} },
+            { text: 'Заморожена', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Freezed, planId: +params.planId} },
+            { text: 'Закрыта', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Closed, planId: +params.planId} },
+        ]);
+
+        ctx.editMessageText(`Укажите статус платежей рассрочки\n\n${paymentStatusInfoMessage()}`, buttons)
+    }
+
+    async changePlanPaymentStatus(ctx: CustomContext) {
+        try {
+            const params = callbackToObj(ctx.update.callback_query.data) as { planId: string, status: PaymentStatus};
+
+            await this.planRepository.update(+params.planId, {paymentStatus: params.status});
+    
+            const plan = await this.planRepository.findOne({ where: { id: +params.planId }, relations: ['user'] })
+    
+            const isMyPlan = ctx.from.id === +plan.user.id;
+    
+            const buttons = inlineButtonsList([
+                { text: 'Поменять статус рассрочки', callback: CommonCallbacks.GetPaymentStatusMenu, payload: { planId: plan.id }, hide: !isMyPlan },
+                { text: 'Посмотреть информацию о предоставившем рассрочку', callback: CommonCallbacks.GetUserById, payload: { id: plan.user.id }, hide: isMyPlan },
+    
+            ])
+    
+            ctx.reply('Обновлени прошло успешно');
+            ctx.reply(planInfoMessage(plan), buttons);
+        } catch (err) {
+            ctx.reply(err)
+        }
+        
     }
 
 }

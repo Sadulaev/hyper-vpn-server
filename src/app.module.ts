@@ -13,10 +13,11 @@ import { BotModule } from './bot/bot.module';
 import { ModeratorModule } from './moderator/moderator.module';
 import { Client } from './common/client.entity';
 import { Plan } from './common/plan.entity';
-import { TelegramExceptionFilter } from './app.filter';
+import { TelegrafErrorInterceptor } from './app.interceptor';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CommonModule } from './common/common.module';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
 const sessions = new LocalSession({ database: 'session_db.json' })
 
@@ -52,13 +53,13 @@ const sessions = new LocalSession({ database: 'session_db.json' })
   ],
   providers: [
     {
-      provide: 'APP_GUARD',
+      provide: APP_GUARD,
       useClass: RolesGuard
     },
     {
-      provide: 'APP_FILTER',
-      useClass: TelegramExceptionFilter
-    }
+      provide: APP_INTERCEPTOR,
+      useClass: TelegrafErrorInterceptor,
+    },
   ],
 })
 export class AppModule { }

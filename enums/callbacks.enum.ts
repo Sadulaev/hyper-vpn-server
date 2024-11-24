@@ -82,6 +82,7 @@ export enum CommonCallbacks {
   CreatePlanWithClosedStatus = 'create-plan-with-freezed-status',
   ChangePlanPaymentStatus = 'change-plan-payment-status',
   GetMyPlans = 'get-my-plans',
+  GetPaymentStatusMenu = 'get-payment-status-menu',
 }
 
 export enum DefaultCallbacks {

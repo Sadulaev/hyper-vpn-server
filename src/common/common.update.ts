@@ -114,6 +114,16 @@ export class CommonUpdate {
     async getMyPlans(@Ctx() ctx: CustomContext) {
       this.commonService.getMyPlans(ctx);
     }
+
+    @Action(new RegExp(CommonCallbacks.GetPaymentStatusMenu))
+    async getPaymentStatusMenu(@Ctx() ctx: CustomContext) {
+      this.commonService.getPaymentStatusMenu(ctx);
+    }
+
+    @Action(new RegExp(CommonCallbacks.ChangePlanPaymentStatus))
+    async changePlanPaymentStatus(@Ctx() ctx: CustomContext) {
+      this.commonService.changePlanPaymentStatus(ctx);
+    }
   
     // @Action(new RegExp(CommonCallbacks.DeletePlan))
     // async deletePlanById(@Ctx() ctx: CustomContext) {
