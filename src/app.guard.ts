@@ -26,7 +26,7 @@ export class RolesGuard implements CanActivate {
 
             if (user) {
                 if (user.role === UserRole.Banned) {
-                    ctx.reply('Вы были забанены. Дальнейшие действие невозможны')
+                    ctx.reply('Вы были забанены. Дальнейшие действия невозможны')
                     throw new UnauthorizedException('Banned guy')
                 } else {
                     ctx.session.role = user.role;

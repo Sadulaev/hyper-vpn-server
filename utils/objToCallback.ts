@@ -3,8 +3,8 @@ export default (obj: {[key: string]: string | number}) => {
 
     if(obj) {
         Object.entries(obj).forEach(([key, value]) => {
-            if(value) {
-                resultCallback = `&${key}-${value}`;
+            if(!!value) {
+                resultCallback = `${resultCallback}&${key}-${value}`;
             }
         })
     }

@@ -1,12 +1,12 @@
-import { Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
+import { Action, Command, Ctx, InjectBot, On, Start, Update } from "nestjs-telegraf";
 import { AdminService } from "src/admin/admin.service";
 import { AuthService } from "src/auth/auth.service";
 import { UserRole } from "enums/roles.enum";
 import { CustomContext } from "types/context";
 import { UserService } from "src/user/user.service";
 import { Context, Telegraf } from "telegraf";
-import { ClientService } from "src/common/client.service";
-import { PlanService } from "src/common/plan.service";
+import { CommonCallbacks } from "enums/callbacks.enum";
+import { CommonService } from "src/common/common.service";
 
 @Update()
 export class BotUpdate {
@@ -15,19 +15,24 @@ export class BotUpdate {
         private readonly adminService: AdminService,
         private readonly authService: AuthService,
         private readonly userService: UserService,
-        private readonly clientService: ClientService,
-        private readonly planService: PlanService
+        private readonly commonService: CommonService,
     ) { }
 
     @Start()
     async startCommand(@Ctx() ctx: CustomContext) {
-        this.authService.onStart(ctx);
+        this.authService.onStartOrReset(ctx, ctx.message.from.id, 'start');
     }
 
     @Command('reset')
     async resetSession(@Ctx() ctx: CustomContext) {
-        this.authService.onReset(ctx);
+        this.authService.onStartOrReset(ctx, ctx.message.from.id, 'reset');
 
+    }
+
+    @Action(CommonCallbacks.GoToStart)
+    async goToStart(@Ctx() ctx: CustomContext) {
+        ctx.answerCbQuery();
+        this.authService.onStartOrReset(ctx, ctx.from.id, 'start');
     }
 
     @On('text')
@@ -35,14 +40,20 @@ export class BotUpdate {
         if (ctx.session.role === UserRole.Admin) {
             this.adminService.onFillModeratorSearch(ctx);
             this.adminService.onFillSearchUserInfo(ctx);
+            this.commonService.onFillCreatePlanInfo(ctx);
+            this.commonService.onFillCreateClientInfo(ctx);
+            this.commonService.onFillSearchClientInfo(ctx);
         }
         if (ctx.session.role === UserRole.Moderator) {
             this.adminService.onFillSearchUserInfo(ctx);
+            this.commonService.onFillCreateClientInfo(ctx);
+            this.commonService.onFillSearchClientInfo(ctx);
+            this.commonService.onFillCreatePlanInfo(ctx);
         }
         if (ctx.session.role === UserRole.User) {
-            this.clientService.onFillCreateClientInfo(ctx);
-            this.clientService.onFillSearchClientInfo(ctx);
-            this.planService.onFillCreatePlanInfo(ctx);
+            this.commonService.onFillCreateClientInfo(ctx);
+            this.commonService.onFillSearchClientInfo(ctx);
+            this.commonService.onFillCreatePlanInfo(ctx);
         }
         if (ctx.session.role === UserRole.Unknown) {
             this.authService.onFillJoinRequest(ctx);
@@ -56,7 +67,7 @@ export class BotUpdate {
             ctx.session.role === UserRole.Moderator ||
             ctx.session.role === UserRole.User
         ) {
-            this.clientService.onFillClientImages(ctx);
+            this.commonService.onFillClientImages(ctx);
         }
     }
 }

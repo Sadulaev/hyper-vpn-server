@@ -24,8 +24,9 @@ export class AuthService {
     @InjectRepository(User) private usersRepository: Repository<User>,
   ) { }
 
-  async onStart(ctx: CustomContext) {
-    ctx.session = {};
+  async onStartOrReset(ctx: CustomContext, userId: number, type: 'start' | 'reset') {
+    ctx.session = ctx.session.role ? {role: ctx.session.role} : {};
+
 
     this.bot.telegram.callApi('setMyCommands', {
       commands: [{ command: '/reset', description: 'Вернутся к началу' }],
@@ -33,19 +34,28 @@ export class AuthService {
 
     const adminId = +this.configService.get<string>('tg.admin');
 
-    if (ctx.message.chat.id === adminId) {
-      ctx.reply('Вы админ. Выберите действия', adminMainButtons());
+    const foundedUser = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (userId === adminId) {
+      if(!foundedUser) {
+        const adminRecord = new User();
+        adminRecord.id = userId;
+        adminRecord.name = 'Admin';
+        adminRecord.role = UserRole.Admin;
+
+        await this.usersRepository.save(adminRecord);
+      }
+      ctx.reply(type === 'start' ? 'Вы админ. Выберите действия' : 'Сессия сброшена. Выберите действие', adminMainButtons());
     } else {
-      const foundedUser = await this.usersRepository.findOne({
-        where: { id: ctx.message.chat.id },
-      });
 
       if (foundedUser) {
         if (foundedUser.role === UserRole.Moderator) {
-          ctx.reply('Вы модератор. Выберите действия', moderatorMainButtons());
+          ctx.reply(type === 'start' ? 'Вы модератор. Выберите действия' : 'Сессия сброшена. Выберите действие', moderatorMainButtons());
         }
         if (foundedUser.role === UserRole.User) {
-          ctx.reply('Выберите действия', usersMainButtons());
+          ctx.reply(type === 'start' ? 'Выберите действия' : 'Сессия сброшена. Выберите действие', usersMainButtons());
         }
         if (foundedUser.role === UserRole.Unknown) {
           ctx.reply('Вы уже отправили заявку, дождитесь ответа модератора');
@@ -133,40 +143,6 @@ export class AuthService {
             ctx.session.joinRequestInfo = undefined;
           }
         }
-      }
-    }
-  }
-
-  async onReset(ctx: CustomContext) {
-    ctx.session = ctx.session.role ? {role: ctx.session.role} : {};
-
-    const adminId = +this.configService.get<string>('tg.admin');
-
-    if (ctx.message.chat.id === adminId) {
-      ctx.reply('Сессия сброшена. Выберите действие', adminMainButtons());
-    } else {
-      const foundedUser = await this.usersRepository.findOne({
-        where: { id: ctx.message.chat.id },
-      });
-
-      if (foundedUser) {
-        if (foundedUser.role === UserRole.Moderator) {
-          ctx.reply(
-            'Сессия сброшена. Выберите действие',
-            moderatorMainButtons(),
-          );
-        }
-        if (foundedUser.role === UserRole.User) {
-          ctx.reply('Сессия сброшена. Выберите действие', usersMainButtons());
-        }
-        if (foundedUser.role === UserRole.Unknown) {
-          ctx.reply('Ваша заявка на рассмотрении, дождитесь ответа модератора');
-        }
-      } else {
-        ctx.reply(
-          'Вы не зарегистрированы, оставьте заявку на вступление',
-          sendRequestButton(),
-        );
       }
     }
   }

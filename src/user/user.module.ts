@@ -5,11 +5,11 @@ import { UserUpdate } from './user.update';
 import { UserService } from './user.service';
 import { Client } from '../common/client.entity';
 import { Plan } from '../common/plan.entity';
-import { PlanService } from 'src/common/plan.service';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Client, Plan])],
-  providers: [UserUpdate, UserService, PlanService],
+  imports: [TypeOrmModule.forFeature([User, Client, Plan]), ConfigModule],
+  providers: [UserUpdate, UserService],
   // exports: [UserModule],
 })
 export class UserModule {}

@@ -11,12 +11,11 @@ import { UserService } from "src/user/user.service";
 import { BotUpdate } from "./bot.update";
 import { Client } from "src/common/client.entity";
 import { Plan } from "src/common/plan.entity";
-import { ClientService } from "src/common/client.service";
-import { PlanService } from "src/common/plan.service";
+import { CommonService } from "src/common/common.service";
 
 @Module({
     imports: [AuthModule, AdminModule, UserModule, ConfigModule, TypeOrmModule.forFeature([User, Client, Plan])],
-    providers: [AuthService, AdminService, UserService, ClientService, PlanService, BotUpdate],
+    providers: [AuthService, AdminService, UserService, CommonService, BotUpdate],
     exports: [BotUpdate],
 })
 export class BotModule { }

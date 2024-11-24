@@ -5,7 +5,7 @@ import { Plan } from 'src/common/plan.entity';
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryColumn()
+  @PrimaryColumn({type: 'bigint'})
   id: number;
 
   @Column({ nullable: true, default: null })

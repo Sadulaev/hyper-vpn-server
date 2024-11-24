@@ -1,3 +1,4 @@
+import { CommonCallbacks } from "enums/callbacks.enum";
 import { Markup } from "telegraf";
 import objToCallback from "utils/objToCallback";
 
@@ -33,6 +34,9 @@ export default (buttons: ButtonType[], pagination: PaginationType) => {
         )
         );
     }
+    paginationButtons.push(
+        Markup.button.callback('🏠 Вернутся к началу', CommonCallbacks.GoToStart)
+    )
 
     return Markup.inlineKeyboard([...itemsButtons, ...paginationButtons], {columns: 1})
 }

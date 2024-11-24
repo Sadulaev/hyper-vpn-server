@@ -13,16 +13,4 @@ import { User } from './user.entity';
 export class UserService {
     constructor(
     ) { }
-
-    beginClientCreating(ctx: CustomContext) {
-        ctx.session.createClientInfo = {
-            step: 'fullName',
-            fullName: null,
-            birthDate: null,
-            images: [],
-        }
-
-        ctx.answerCbQuery();
-        ctx.reply('Введите ФИО клиента (Будьте внимательны при заполнении)')
-    }
 }

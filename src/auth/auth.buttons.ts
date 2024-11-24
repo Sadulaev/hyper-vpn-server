@@ -21,7 +21,10 @@ export function adminMainButtons() {
         '👨‍💼 Забаненные пользователи',
         `${AdminCallbacks.GetBansList}&page-1`,
       ),
-      Markup.button.callback('✔ Записи о клиентах', CommonCallbacks.GetMyClients),
+      Markup.button.callback(
+        '✔ Записи о клиентах и рассрочках',
+        CommonCallbacks.GetMenu,
+      ),
       Markup.button.callback(
         '🔑 Активные запросы на вступление',
         `${AdminCallbacks.GetJoinRequests}&page-1`,
@@ -46,8 +49,8 @@ export function moderatorMainButtons() {
       `${ModeratorCallbacks.GetBansList}&page-1`,
     ),
     Markup.button.callback(
-      '✔ Записи о клиентах',
-      CommonCallbacks.GetMyClients,
+      '✔ Записи о клиентах и рассрочках',
+      CommonCallbacks.GetMenu,
     ),
   ], { columns: 1 });
 }
@@ -60,16 +63,20 @@ export function usersMainButtons() {
     ),
     Markup.button.callback(
       '✍ Добавленные вами клиенты',
-      `${CommonCallbacks.GetMyClients}&page-1`,
+      `${CommonCallbacks.GetClientsCreatedByMe}&page-1`,
     ),
     Markup.button.callback(
       '💵 Ваши активные клиенты',
-      `${CommonCallbacks.GetMyClients}&page-1`,
+      `${CommonCallbacks.GetMyActiveClients}&page-1`,
     ),
     Markup.button.callback(
       '➕ Добавить клиента',
       CommonCallbacks.CreateClient,
     ),
+    Markup.button.callback(
+      '📃 Ваши рассрочки',
+      `${CommonCallbacks.GetMyPlans}&page-1`
+    )
   ], { columns: 1 });
 }
 

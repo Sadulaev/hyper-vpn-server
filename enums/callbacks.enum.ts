@@ -50,15 +50,27 @@ export enum ModeratorCallbacks {
 export enum UserCallbacks {}
 
 export enum CommonCallbacks {
+  // Common feature
+  GoToStart = 'go-to-start',
+  GetMenu = 'get-menu',
+
+  // UserFeature
+  GetUserById = 'get-user-by-id',
+
+  // Clients features
   FindClients = 'find-clients',
   ChangeSearchClientPage = 'change-search-client-page',
   GetClient = 'get-client-by-id',
-  GetMyClients = 'get-my-clients',
+  GetClientsCreatedByMe = 'get-clients-created-by-me',
+  GetMyActiveClients = 'get-my-active-clients',
   CreateClient = 'create-client',
   GetAllClientPlans = 'get-all-client-plans',
+  GetClientPassportImages = 'get-client-passport-images',
+  GetClientsByUserId = 'get-clients-by-user-id',
+
+  // Plans feature
   GetMyPlansOfClient = 'get-my-plans-of-client',
   CreatePlanToClient = 'create-plan-to-client',
-  GetClientPassportImages = 'get-client-passport-images',
   AddRecordManually = 'add-record-manually',
   GetClientPlans = 'get-client-plans',
   GetPlan = 'get-plan-by-id',
@@ -69,7 +81,7 @@ export enum CommonCallbacks {
   CreatePlanWithFreezedStatus = 'create-plan-with-freezed-status',
   CreatePlanWithClosedStatus = 'create-plan-with-freezed-status',
   ChangePlanPaymentStatus = 'change-plan-payment-status',
-  GetClientsByUserId = 'get-clients-by-user-id'
+  GetMyPlans = 'get-my-plans',
 }
 
 export enum DefaultCallbacks {
