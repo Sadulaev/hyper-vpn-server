@@ -22,6 +22,10 @@ import userInfoMessage from "messages/user-info.message";
 import { join } from 'path';
 import * as path from 'path';
 import { MediaGroup } from "telegraf/typings/telegram-types";
+import { validateDate } from "dto/date.dto";
+import { validateStringNumber } from "dto/number.dto";
+import { validateName } from "dto/name.dto";
+import { validateRusPhoneNumber } from "dto/phone.dto";
 
 @Injectable()
 export class CommonService {
@@ -76,17 +80,18 @@ export class CommonService {
 
     async onFillCreateClientInfo(ctx: CustomContext) {
         if (ctx.session?.createClientInfo) {
-            if (ctx.session?.createClientInfo?.step === 'fullName') {
+            if (ctx.session?.createClientInfo?.step === 'fullName' && !!(await validateName(ctx.message.text, ctx))) {
                 ctx.session.createClientInfo.fullName = ctx.message.text;
                 ctx.session.createClientInfo.step = 'birthDate';
 
                 ctx.reply('Введите дату рождения клиента (Будьте внимательны при заполнении)')
-            } else if (ctx.session?.createClientInfo?.step === 'birthDate') {
+            } else if (ctx.session?.createClientInfo?.step === 'birthDate' && !!(await validateDate(ctx.message.text, ctx))) {
                 ctx.session.createClientInfo.birthDate = ctx.message.text;
                 ctx.session.createClientInfo.step = 'phone'
 
-                ctx.reply('Введите номер телефона клиента или точку если хотите пропустить (Будьте внимательны при заполнении)')
-            } else if (ctx.session?.createClientInfo?.step === 'phone') {
+                ctx.reply('Введите номер телефона клиента')
+            } else if (
+                ctx.session?.createClientInfo?.step === 'phone' && !!(await validateRusPhoneNumber(ctx.message.text, ctx))) {
                 ctx.session.createClientInfo.phone = ctx.message.text === '.' ? null : ctx.message.text;
                 ctx.session.createClientInfo.step = 'images';
 
@@ -179,21 +184,21 @@ export class CommonService {
             .skip((+params.page - 1) * 10)
             .getMany();
 
-            if (clientsPagination.length === 0) {
-                ctx.answerCbQuery();
-                ctx.reply('⚠ Записей не найдено')
-            } else {
+        if (clientsPagination.length === 0) {
+            ctx.answerCbQuery();
+            ctx.reply('⚠ Записей не найдено')
+        } else {
 
-                const clientsListButtons = inlineButtonsPages(
-                    clientsPagination.map(client => (
-                        { text: `👨‍💼 ${client.fullName} | ${new Date(client.birthDate).toLocaleDateString()}`, callback: CommonCallbacks.GetClient, payload: { id: client.id } }
-                    )),
-                    { callback: CommonCallbacks.GetMyActiveClients, page: +params.page, take: 10 }
-                )
+            const clientsListButtons = inlineButtonsPages(
+                clientsPagination.map(client => (
+                    { text: `👨‍💼 ${client.fullName} | ${new Date(client.birthDate).toLocaleDateString()}`, callback: CommonCallbacks.GetClient, payload: { id: client.id } }
+                )),
+                { callback: CommonCallbacks.GetMyActiveClients, page: +params.page, take: 10 }
+            )
 
-                ctx.answerCbQuery();
-                ctx.editMessageText('Список клиентов', clientsListButtons)
-            }
+            ctx.answerCbQuery();
+            ctx.editMessageText('Список клиентов', clientsListButtons)
+        }
     }
 
     async onStartSearchClient(ctx: CustomContext) {
@@ -386,7 +391,7 @@ export class CommonService {
         ctx.reply('Введите название рассрочки (указывается для удобства навигации)')
     }
 
-    onFillCreatePlanInfo(ctx: CustomContext) {
+    async onFillCreatePlanInfo(ctx: CustomContext) {
         if (ctx.session.createPlanInfo) {
             if (ctx.session.createPlanInfo.step === 'title') {
                 ctx.session.createPlanInfo.title = ctx.message.text;
@@ -398,17 +403,17 @@ export class CommonService {
                 ctx.session.createPlanInfo.step = 'sum';
 
                 ctx.reply('Укажите общую сумму рассрочки')
-            } else if (ctx.session.createPlanInfo.step === 'sum') {
+            } else if (ctx.session.createPlanInfo.step === 'sum' && !!(await validateStringNumber(ctx.message.text, ctx))) {
                 ctx.session.createPlanInfo.sum = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'startDate';
 
                 ctx.reply('Укажите дату начала рассрочки в формате дд.мм.гггг')
-            } else if (ctx.session.createPlanInfo.step === 'startDate') {
+            } else if (ctx.session.createPlanInfo.step === 'startDate' && !!(await validateDate(ctx.message.text, ctx))) {
                 ctx.session.createPlanInfo.startDate = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'endDate';
 
                 ctx.reply('Укажите дату окончания рассрочки в формате дд.мм.гггг')
-            } else if (ctx.session.createPlanInfo.step === 'endDate') {
+            } else if (ctx.session.createPlanInfo.step === 'endDate' && !!(await validateDate(ctx.message.text, ctx))) {
                 ctx.session.createPlanInfo.endDate = ctx.message.text;
                 ctx.session.createPlanInfo.step = 'paymentStatus';
 
@@ -565,11 +570,11 @@ export class CommonService {
     async getPaymentStatusMenu(ctx: CustomContext) {
         const params = callbackToObj(ctx.update.callback_query.data) as { planId: string };
 
-       const buttons = inlineButtonsList([
-            { text: 'Активна', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Active, planId: +params.planId} },
-            { text: 'Просрочена', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Expired, planId: +params.planId} },
-            { text: 'Заморожена', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Freezed, planId: +params.planId} },
-            { text: 'Закрыта', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Closed, planId: +params.planId} },
+        const buttons = inlineButtonsList([
+            { text: 'Активна', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Active, planId: +params.planId } },
+            { text: 'Просрочена', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Expired, planId: +params.planId } },
+            { text: 'Заморожена', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Freezed, planId: +params.planId } },
+            { text: 'Закрыта', callback: CommonCallbacks.ChangePlanPaymentStatus, payload: { status: PaymentStatus.Closed, planId: +params.planId } },
         ]);
 
         ctx.editMessageText(`Укажите статус платежей рассрочки\n\n${paymentStatusInfoMessage()}`, buttons)
@@ -577,26 +582,26 @@ export class CommonService {
 
     async changePlanPaymentStatus(ctx: CustomContext) {
         try {
-            const params = callbackToObj(ctx.update.callback_query.data) as { planId: string, status: PaymentStatus};
+            const params = callbackToObj(ctx.update.callback_query.data) as { planId: string, status: PaymentStatus };
 
-            await this.planRepository.update(+params.planId, {paymentStatus: params.status});
-    
+            await this.planRepository.update(+params.planId, { paymentStatus: params.status });
+
             const plan = await this.planRepository.findOne({ where: { id: +params.planId }, relations: ['user'] })
-    
+
             const isMyPlan = ctx.from.id === +plan.user.id;
-    
+
             const buttons = inlineButtonsList([
                 { text: 'Поменять статус рассрочки', callback: CommonCallbacks.GetPaymentStatusMenu, payload: { planId: plan.id }, hide: !isMyPlan },
                 { text: 'Посмотреть информацию о предоставившем рассрочку', callback: CommonCallbacks.GetUserById, payload: { id: plan.user.id }, hide: isMyPlan },
-    
+
             ])
-    
+
             ctx.reply('Обновлени прошло успешно');
             ctx.reply(planInfoMessage(plan), buttons);
         } catch (err) {
             ctx.reply(err)
         }
-        
+
     }
 
 }

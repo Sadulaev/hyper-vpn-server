@@ -1,5 +1,6 @@
 import { PaymentStatus } from "enums/payment-status.enum";
 import { Plan } from "src/common/plan.entity";
+import formatDateToLocal from "utils/formatDateToLocal";
 
 const statusText = {
     [PaymentStatus.Active]: 'Статус рассрочки: Активна',
@@ -9,5 +10,5 @@ const statusText = {
 }
 
 export default (plan: Plan) => {
-    return `Информация о рассрочке\n\nНазвание: ${plan.title} \nОписание: ${plan.description} \nСумма рассрочки: ${plan.sum} \nДата начала: ${plan.startDate} \nДата окончание: ${plan.endDate}\n${statusText[plan.paymentStatus]}`
+    return `Информация о рассрочке\n\nНазвание: ${plan.title} \nОписание: ${plan.description} \nСумма рассрочки: ${plan.sum} \nДата начала: ${formatDateToLocal(plan.startDate)} \nДата окончание: ${formatDateToLocal(plan.endDate)}\n${statusText[plan.paymentStatus]}`
 }

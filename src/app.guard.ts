@@ -21,21 +21,21 @@ export class RolesGuard implements CanActivate {
         if (ctx.chat.id === +config().tg.admin) {
             ctx.session.role = UserRole.Admin;
             return true;
+        } else if (ctx.session.role === UserRole.Banned) {
+            ctx.reply('Вы были забанены. Дальнейшие действия невозможны')
+            throw new UnauthorizedException('Banned guy')
         } else {
-            const user = await this.usersRepository.findOne({ where: { id: ctx.chat.id } }); // Fetch user from DB
+            if (!ctx.session.role) {
+                const user = await this.usersRepository.findOne({ where: { id: ctx.chat.id } }); // Fetch user from DB
 
-            if (user) {
-                if (user.role === UserRole.Banned) {
-                    ctx.reply('Вы были забанены. Дальнейшие действия невозможны')
-                    throw new UnauthorizedException('Banned guy')
-                } else {
+                if (user) {
                     ctx.session.role = user.role;
                     return true;
                 }
             }
-
-            ctx.session.role = UserRole.Unknown;
-            return true;
         }
+
+        ctx.session.role = UserRole.Unknown;
+        return true;
     }
-}
+};

@@ -7,10 +7,10 @@ import {
 } from 'class-validator';
 import { CustomContext } from 'types/context';
 
-export function IsFullName(validationOptions?: ValidationOptions) {
+export function IsNumberString(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
-            name: 'isFullName',
+            name: 'isNumberString',
             target: object.constructor,
             propertyName: propertyName,
             options: validationOptions,
@@ -18,20 +18,11 @@ export function IsFullName(validationOptions?: ValidationOptions) {
                 validate(value: any, args: ValidationArguments) {
                     if (typeof value !== 'string') return false;
 
-                    // Разбиваем строку на слова
-                    const parts = value.trim().split(' ');
-
-                    // Проверяем, что ровно три слова
-                    if (parts.length !== 3) return false;
-
-                    // Проверяем длину первых двух слов
-                    const [first, second] = parts;
-                    if (first.length <= 2 || second.length <= 2) return false;
-
-                    return true;
+                    // Проверяем, что строка представляет собой корректное число
+                    return !isNaN(Number(value)) && value.trim() !== '';
                 },
                 defaultMessage(args: ValidationArguments) {
-                    return 'ФИО должно состоять из трех слов, разделенных пробелами, имя и фамилия дожны быть длинне 2 символов. Если нет отчества просто поставьте точку';
+                    return 'Значение должно быть корректным числом';
                 },
             },
         });
@@ -39,15 +30,15 @@ export function IsFullName(validationOptions?: ValidationOptions) {
 }
 
 // Создаем DTO для валидации конкретного значения
-class NameValidateDto {
-    @IsFullName()
-    name: string;
+class NumberValidationDto {
+    @IsNumberString()
+    date: string;
 }
 
 // Функция для валидации
-export async function validateName(name: string, ctx: CustomContext) {
+export async function validateStringNumber(date: string, ctx: CustomContext) {
     // Оборачиваем значение в DTO-класс
-    const dto = plainToInstance(NameValidateDto, { name });
+    const dto = plainToInstance(NumberValidationDto, { date });
 
     // Запускаем валидацию
     const errors = await validate(dto);

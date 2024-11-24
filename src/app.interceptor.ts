@@ -4,9 +4,10 @@ import {
   ExecutionContext,
   NestInterceptor,
 } from '@nestjs/common';
-import { catchError, Observable } from 'rxjs';
-import { throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { CustomContext } from 'types/context';
+import { ValidationError } from 'class-validator';
 
 @Injectable()
 export class TelegrafErrorInterceptor implements NestInterceptor {

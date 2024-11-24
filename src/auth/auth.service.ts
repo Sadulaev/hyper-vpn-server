@@ -15,6 +15,8 @@ import {
 } from 'src/auth/auth.buttons';
 import { UserRole } from 'enums/roles.enum';
 import requestMessage from 'messages/request.message';
+import { validateName } from 'dto/name.dto';
+import { validateRusPhoneNumber } from 'dto/phone.dto';
 
 @Injectable()
 export class AuthService {
@@ -47,18 +49,26 @@ export class AuthService {
 
         await this.usersRepository.save(adminRecord);
       }
+      ctx.session.role = UserRole.Admin;
       ctx.reply(type === 'start' ? 'Вы админ. Выберите действия' : 'Сессия сброшена. Выберите действие', adminMainButtons());
     } else {
 
       if (foundedUser) {
         if (foundedUser.role === UserRole.Moderator) {
+        ctx.session.role = UserRole.Moderator;
           ctx.reply(type === 'start' ? 'Вы модератор. Выберите действия' : 'Сессия сброшена. Выберите действие', moderatorMainButtons());
         }
         if (foundedUser.role === UserRole.User) {
+          ctx.session.role = UserRole.User;
           ctx.reply(type === 'start' ? 'Выберите действия' : 'Сессия сброшена. Выберите действие', usersMainButtons());
         }
         if (foundedUser.role === UserRole.Unknown) {
+          ctx.session.role = UserRole.Unknown;
           ctx.reply('Вы уже отправили заявку, дождитесь ответа модератора');
+        }
+        if (foundedUser.role === UserRole.Banned) {
+          ctx.session.role = UserRole.Banned;
+          ctx.reply("Вы были забанены");
         }
       } else {
         ctx.reply(
@@ -83,7 +93,7 @@ export class AuthService {
   }
 
   async onFillJoinRequest(ctx: CustomContext) {
-    if (ctx.session?.joinRequestInfo?.step === 'name') {
+    if (ctx.session?.joinRequestInfo?.step === 'name' && !!(await validateName(ctx.message.text, ctx))) {
       ctx.session.joinRequestInfo.id = ctx.message.chat.id;
       ctx.session.joinRequestInfo.name = ctx.message.text;
       ctx.session.joinRequestInfo.step = 'organization';
@@ -95,7 +105,7 @@ export class AuthService {
         ctx.message.text === '.' ? null : ctx.message.text;
       ctx.session.joinRequestInfo.step = 'phone';
       ctx.reply('И последнее - введите номер телефона');
-    } else if (ctx.session?.joinRequestInfo?.step === 'phone') {
+    } else if (ctx.session?.joinRequestInfo?.step === 'phone' && !!(await validateRusPhoneNumber(ctx.message.text, ctx))) {
       ctx.session.joinRequestInfo.phone = ctx.message.text;
 
       if (

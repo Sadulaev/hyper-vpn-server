@@ -17,7 +17,7 @@ import { TelegrafErrorInterceptor } from './app.interceptor';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CommonModule } from './common/common.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
 const sessions = new LocalSession({ database: 'session_db.json' })
 
@@ -59,7 +59,7 @@ const sessions = new LocalSession({ database: 'session_db.json' })
     {
       provide: APP_INTERCEPTOR,
       useClass: TelegrafErrorInterceptor,
-    },
+    }
   ],
 })
 export class AppModule { }
