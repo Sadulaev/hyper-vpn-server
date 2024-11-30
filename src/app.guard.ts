@@ -25,13 +25,11 @@ export class RolesGuard implements CanActivate {
             ctx.reply('Вы были забанены. Дальнейшие действия невозможны')
             throw new UnauthorizedException('Banned guy')
         } else {
-            if (!ctx.session.role) {
-                const user = await this.usersRepository.findOne({ where: { id: ctx.chat.id } }); // Fetch user from DB
+            const user = await this.usersRepository.findOne({ where: { id: ctx.chat.id } }); // Fetch user from DB
 
-                if (user) {
-                    ctx.session.role = user.role;
-                    return true;
-                }
+            if (user) {
+                ctx.session.role = user.role;
+                return true;
             }
         }
 
