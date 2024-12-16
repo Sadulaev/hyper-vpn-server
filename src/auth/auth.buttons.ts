@@ -70,8 +70,8 @@ export function usersMainButtons() {
       `${CommonCallbacks.GetMyActiveClients}&page-1`,
     ),
     Markup.button.callback(
-      '➕ Добавить клиента',
-      CommonCallbacks.CreateClient,
+      '➕ Оформить рассрочку',
+      CommonCallbacks.CreatePlanWithClient,
     ),
     Markup.button.callback(
       '📃 Ваши рассрочки',

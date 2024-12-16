@@ -67,6 +67,7 @@ export enum CommonCallbacks {
   GetAllClientPlans = 'get-all-client-plans',
   GetClientPassportImages = 'get-client-passport-images',
   GetClientsByUserId = 'get-clients-by-user-id',
+  CreatePlanWithClient = 'create-plan-with-client',
 
   // Plans feature
   GetMyPlansOfClient = 'get-my-plans-of-client',

@@ -16,6 +16,10 @@ export class Client {
     @Column({default: null, nullable: true})
     phone: string | null;
 
+    // Серия и номер паспорта
+    @Column({nullable: false})
+    serial: string;
+
     @Column({type: 'json', default: null, nullable: true})
     images: string | null;
 
