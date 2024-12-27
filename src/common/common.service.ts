@@ -103,10 +103,6 @@ export class CommonService {
   }
 
   beginCreatingPlanAndUser(ctx: CustomContext) {
-    const params = callbackToObj(ctx.update.callback_query.data) as {
-      userId: string;
-    };
-
     ctx.session.createPlanAndUser = {
       step: 'title',
       title: null,
@@ -126,7 +122,7 @@ export class CommonService {
       images: [],
 
       // id создающего
-      userId: +params.userId,
+      userId: ctx.from.id,
     };
 
     ctx.reply(
@@ -194,8 +190,7 @@ export class CommonService {
           `И наконец - укажите статус платежей рассрочки\n\n${paymentStatusInfoMessage()}`,
           buttons,
         );
-      }
-      if (
+      } else if (
         ctx.session?.createPlanAndUser?.step === 'fullName' &&
         !!(await validateName(ctx.message.text, ctx))
       ) {
@@ -282,27 +277,24 @@ export class CommonService {
 
         const newPlan = new Plan();
 
-        newPlan.title = ctx.session.createPlanInfo.title;
-        newPlan.description = ctx.session.createPlanInfo.description;
-        newPlan.sum = ctx.session.createPlanInfo.sum;
-        newPlan.startDate = ctx.session.createPlanInfo.startDate;
-        newPlan.endDate = ctx.session.createPlanInfo.endDate;
-        newPlan.paymentStatus = ctx.session.createPlanInfo.paymentStatus;
+        newPlan.title = ctx.session.createPlanAndUser.title;
+        newPlan.description = ctx.session.createPlanAndUser.description;
+        newPlan.sum = ctx.session.createPlanAndUser.sum;
+        newPlan.startDate = ctx.session.createPlanAndUser.startDate;
+        newPlan.endDate = ctx.session.createPlanAndUser.endDate;
+        newPlan.paymentStatus = ctx.session.createPlanAndUser.paymentStatus;
         newPlan.client = newClient;
 
         const user = await this.userRepository.findOne({
-          where: { id: +ctx.session.createPlanInfo.userId },
+          where: { id: +ctx.session.createPlanAndUser.userId },
         });
         newPlan.user = user;
 
         await this.planRepository.save(newPlan);
 
-        ctx.editMessageText(
-          'Рассрочка была успешно оформлена на нового клиента',
-        );
+        ctx.reply('Рассрочка была успешно оформлена на нового клиента');
         ctx.session = {};
 
-        ctx.session.createPlanAndUser = undefined;
         ctx.reply('Клиент был успешно сохранен!');
       }
     }
@@ -847,7 +839,7 @@ export class CommonService {
         await this.createPlan(ctx);
       }
       if (ctx.session.createPlanAndUser) {
-        ctx.session.createPlanAndUser = PaymentStatus.Active;
+        ctx.session.createPlanAndUser.paymentStatus = PaymentStatus.Active;
         ctx.session.createPlanAndUser.step = 'fullName';
         ctx.editMessageText(
           'Теперь заполните данные о пользователе. Введите ФИО:',
@@ -861,17 +853,16 @@ export class CommonService {
       ctx.session.createPlanInfo &&
       ctx.session.createPlanInfo.step === 'paymentStatus'
     ) {
-      if (ctx.session.createPlanInfo) {
-        ctx.session.createPlanInfo.paymentStatus = PaymentStatus.Expired;
-        await this.createPlan(ctx);
-      }
-      if (ctx.session.createPlanAndUser) {
-        ctx.session.createPlanAndUser = PaymentStatus.Expired;
-        ctx.session.createPlanAndUser.step = 'fullName';
-        ctx.editMessageText(
-          'Теперь заполните данные о пользователе. Введите ФИО:',
-        );
-      }
+      ctx.session.createPlanInfo.paymentStatus = PaymentStatus.Expired;
+      await this.createPlan(ctx);
+    }
+    if (ctx.session.createPlanAndUser) {
+      console.log(123);
+      ctx.session.createPlanAndUser.paymentStatus = PaymentStatus.Expired;
+      ctx.session.createPlanAndUser.step = 'fullName';
+      ctx.editMessageText(
+        'Теперь заполните данные о пользователе. Введите ФИО:',
+      );
     }
   }
 
@@ -885,7 +876,7 @@ export class CommonService {
         await this.createPlan(ctx);
       }
       if (ctx.session.createPlanAndUser) {
-        ctx.session.createPlanAndUser = PaymentStatus.Freezed;
+        ctx.session.createPlanAndUser.paymentStatus = PaymentStatus.Freezed;
         ctx.session.createPlanAndUser.step = 'fullName';
         ctx.editMessageText(
           'Теперь заполните данные о пользователе. Введите ФИО:',
@@ -904,7 +895,7 @@ export class CommonService {
         await this.createPlan(ctx);
       }
       if (ctx.session.createPlanAndUser) {
-        ctx.session.createPlanAndUser = PaymentStatus.Closed;
+        ctx.session.createPlanAndUser.paymentStatus = PaymentStatus.Closed;
         ctx.session.createPlanAndUser.step = 'fullName';
         ctx.editMessageText(
           'Теперь заполните данные о пользователе. Введите ФИО:',
