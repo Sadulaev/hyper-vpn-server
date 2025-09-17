@@ -13,8 +13,8 @@ export default (buttons: ButtonType[]) => {
     return Markup.inlineKeyboard([
         ...buttons.filter(button => !button.hide).map(button => (
             Markup.button.callback(button.text, `${button.callback}${objToCallback(button.payload)}`)
-        )),
-        { text: '🏠 Вернутся к началу', callback_data: CommonCallbacks.GoToStart }],
-        { columns: 1 }
+        ))]
+        // { text: '🏠 Вернутся к началу', callback_data: CommonCallbacks.GoToStart }],
+        // { columns: 1 }
     )
 }

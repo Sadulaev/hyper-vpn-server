@@ -34,9 +34,9 @@ export default (buttons: ButtonType[], pagination: PaginationType) => {
         )
         );
     }
-    paginationButtons.push(
-        Markup.button.callback('🏠 Вернутся к началу', CommonCallbacks.GoToStart)
-    )
+    // paginationButtons.push(
+    //     Markup.button.callback('🏠 Вернутся к началу', CommonCallbacks.GoToStart)
+    // )
 
     return Markup.inlineKeyboard([...itemsButtons, ...paginationButtons], {columns: 1})
 }
