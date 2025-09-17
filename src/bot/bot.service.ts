@@ -8,8 +8,9 @@ import inlineButtonsList from 'button-templates/inlineButtonsList';
 
 
 import { ConfigService } from '@nestjs/config';
-import getPaymentURL from 'utils/pay';
-import { inlineKeyboard } from 'telegraf/typings/markup';
+import getPaymentURL from 'utils/getPaymentURL';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class BotService {
@@ -21,55 +22,67 @@ export class BotService {
   // Common feature
   // -------------------------------------------------------------------------------------------------------
   async getMenu(ctx: CustomContext) {
-    const buttons = inlineButtonsList([
+    const buttons = Markup.inlineKeyboard([
       {
-        text: 'Приобрести VPN',
-        callback: CommonCallbacks.GetVPNSubscriptions,
+        text: 'Приобрести VPN 🛜',
+        callback_data: CommonCallbacks.GetVPNSubscriptions,
       },
-      // {
-      //   text: '✍ Добавленные вами клиенты',
-      //   callback: CommonCallbacks.GetClientsCreatedByMe,
-      //   payload: { page: 1 },
-      // },
-      // {
-      //   text: '💵 Ваши активные клиенты',
-      //   callback: CommonCallbacks.GetMyActiveClients,
-      //   payload: { page: 1 },
-      // },
-      // {
-      //   text: '➕ Оформить рассрочку',
-      //   callback: CommonCallbacks.CreatePlanWithClient,
-      // },
-      // {
-      //   text: '📃 Ваши рассрочки',
-      //   callback: CommonCallbacks.GetMyPlans,
-      //   payload: { page: 1 },
-      // },
-    ]);
+      {
+        text: 'Инструкция установки Hyper VPN 📍',
+        callback_data: CommonCallbacks.GetInstructions,
+      },
+      {
+        text: 'Тех Поддержка ⚠️',
+        url: 'https://t.me/hyper_vpn_help'
+      }
+    ], { columns: 1 });
 
-    ctx.reply('HyperVPN - самый быстрый на диком западе', buttons);
+    const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-menu.jpg');
+    ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: 'HyperVPN - самый быстрый на диком западе', reply_markup: buttons.reply_markup });
     // ctx.editMessageText('Меню управления клиентами и рассрочками', buttons);
   }
 
 
   async getSubscriptions(ctx: CustomContext) {
-    const buttons = inlineButtonsList([
+    const buttons = Markup.inlineKeyboard([
       {
         text: 'Купить на 1 месяц - 189₽',
-        callback: CommonCallbacks.GetVPNKey,
-        payload: { period: 1 },
+        callback_data: CommonCallbacks.GetVPNKey,
       },
-    ]);
+      {
+        text: 'Купить на 3 месяца - 449₽',
+        callback_data: CommonCallbacks.GetVPNKey,
+      },
+      {
+        text: 'Купить на 6 месяцев - 699₽',
+        callback_data: CommonCallbacks.GetVPNKey,
+      },
+      {
+        text: 'Купить на 12 месяцев - 1499₽',
+        callback_data: CommonCallbacks.GetVPNKey,
+      },
+      {
+        text: 'Назад',
+        callback_data: CommonCallbacks.GetMenu
+      },
+    ], { columns: 1 });
 
-    console.log(ctx)
+    const replyText = `1️⃣ Выбери нужный тариф ниже👇🏻
+2️⃣ Произведи оплату
+3️⃣ Установи VPN на свое устройство 
+
+❗️После оплаты выдадим приложение, которое доступно для установки на Iphone, Android, ПК, TV
+
+💡Доступ выдается на телефон, компьютер, планшет и телевизор`
 
     ctx.deleteMessage(ctx.callbackQuery.message.message_id);
-    ctx.reply('Выберите тариф:', buttons);
+    const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-subscriptions.jpg');
+    ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: 'Выберите тариф', reply_markup: buttons.reply_markup });
   }
 
   async getPaymentLink(ctx: CustomContext) {
     const params = callbackToObj(ctx.update.callback_query.data) as {
-      perios: string;
+      period: string;
     };
 
     const merchantConfig = {

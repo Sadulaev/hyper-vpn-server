@@ -21,7 +21,8 @@ async function getPaymentURL(payment: PaymentInfo) {
         `&OutSum=${encodeURIComponent(out_summ)}` +
         `&InvId=${encodeURIComponent(inv_id)}` +
         `&Description=${encodeURIComponent(inv_desc)}` +
-        `&SignatureValue=${encodeURIComponent(signature)}`;
+        `&SignatureValue=${encodeURIComponent(signature)}` + 
+        '&Culture=ru';
 
     // Выполняем GET-запрос (обычно будет редирект на платежную страницу)
     const res = await fetch(url, { redirect: "follow" });

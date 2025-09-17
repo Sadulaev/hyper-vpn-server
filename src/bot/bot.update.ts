@@ -18,7 +18,7 @@ export class BotUpdate {
   constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly botService: BotService
-  ) {}
+  ) { }
 
   @Start()
   async startCommand(@Ctx() ctx: CustomContext) {
@@ -27,6 +27,11 @@ export class BotUpdate {
 
   @Command('reset')
   async resetSession(@Ctx() ctx: CustomContext) {
+    this.botService.getMenu(ctx);
+  }
+
+  @Action(CommonCallbacks.GetMenu)
+  async getMenu(@Ctx() ctx: CustomContext) {
     this.botService.getMenu(ctx);
   }
 
