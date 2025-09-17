@@ -149,7 +149,7 @@ ctx.answerCbQuery();
       mrh_pass1: this.configService.get('ROBOKASSA_MERCHANT_PASSWORD_1'),
       mrh_pass2: this.configService.get('ROBOKASSA_MERCHANT_PASSWORD_2'),
       inv_id: Number(session.invId),
-      inv_desc: 'Покупка VPN',
+      inv_desc: '123',
       out_summ: '5',
       shp_order: session.id,
     })

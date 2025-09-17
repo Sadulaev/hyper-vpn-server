@@ -7,8 +7,8 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'expired';
 @Index('idx_payment_sessions_status', ['status'])
 @Index('idx_payment_sessions_expires_at', ['expiresAt'])
 export class PaymentSession {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string; // наш orderId (uuid), положим в shp_order
+  @PrimaryGeneratedColumn()
+  id!: string;
 
   @Column({ type: 'bigint', unique: true })
   invId!: string; // числовой InvId, Robokassa вернёт его в колбэке
@@ -19,12 +19,12 @@ export class PaymentSession {
   @Column({ type: 'varchar', length: 16, default: 'pending' })
   status!: PaymentStatus;
 
+  @Column({ type: 'int', default: 1})
+  period: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 
   @Column({ type: 'timestamptz', nullable: true })
   expiresAt!: Date | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  meta?: Record<string, any>;
 }

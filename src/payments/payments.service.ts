@@ -42,16 +42,16 @@ export class PaymentsService {
     return saved; // id = orderId (uuid), invId = числовой
   }
 
-  async markPaidByOrder(orderId: string) {
-    const s = await this.repo.findOne({ where: { id: orderId } });
+  async markPaidByInvId(invId: string) {
+    const s = await this.repo.findOne({ where: { invId } });
     if (!s) return null;
     if (s.status === 'paid') return s; // идемпотентно
     s.status = 'paid';
     return this.repo.save(s);
   }
 
-  async findByOrder(orderId: string) {
-    return this.repo.findOne({ where: { id: orderId } });
+  async findOrderByInvId(invId: string) {
+    return this.repo.findOne({ where: { invId } });
   }
 
   async cleanupExpired() {

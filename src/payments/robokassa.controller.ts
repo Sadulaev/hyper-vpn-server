@@ -1,10 +1,12 @@
 import { Controller, Post, Req, Res } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { ConfigService } from '@nestjs/config';
-import { Telegraf } from 'telegraf';
+import { Markup, Telegraf } from 'telegraf';
 import * as bodyParser from 'body-parser'; // в main.ts повесите app.use(bodyParser.urlencoded({extended:true}))
+import { getVlessKey } from 'utils/getVlessKey';
+import { CommonCallbacks } from 'enums/callbacks.enum';
 
-@Controller('robokassa')
+@Controller('/')
 export class RobokassaController {
     private bot: Telegraf;
 
@@ -15,52 +17,76 @@ export class RobokassaController {
         this.bot = new Telegraf(this.configService.get('TG_TOKEN')!);
     }
 
-    @Post('result') // ResultURL (серверный)
+    @Post('payment/approve') // ResultURL (серверный)
     async result(@Req() req: any, @Res() res: any) {
+        console.log(req.body)
+
         const { OutSum, InvId, SignatureValue, ...rest } = req.body;
 
-        // Вытащим все shp_*
-        const shp: Record<string, string> = {};
-        for (const k of Object.keys(rest)) {
-            if (k.startsWith('shp_')) shp[k] = String(rest[k]);
-        }
+        console.log(req.body);
 
-        const pass2 = this.configService.get('ROBOKASSA_MERCHANT_PASSWORD_2')!;
-        const ok = this.payments.verifySignature(String(OutSum), String(InvId), String(SignatureValue), pass2, shp);
-
-        if (!ok) {
-            return res.status(400).send('bad signature');
-        }
-
-        const orderId = shp['shp_order'];
+        const orderId = InvId;
         if (!orderId) {
             return res.status(400).send('no order');
         }
 
-        const sess = await this.payments.findByOrder(orderId);
-        if (!sess) return res.send('OK'); // идемпотентность, ничего не делаем
-
-        // Обновляем статус
-        await this.payments.markPaidByOrder(orderId);
-
-        // Отправляем сообщение пользователю
-        try {
+        const sess = await this.payments.findOrderByInvId(orderId);
+        if (!sess) {
             await this.bot.telegram.sendMessage(
                 sess.telegramId,
-                `✅ Оплата получена. Заказ ${orderId} активирован. Спасибо!`,
+                `Сняли деньги но не выдали ключ? Напишите в поддержку`,
             );
-        } catch (e) {
-            // логируем, но колбэк подтверждаем
-            console.error('Telegram send error', e);
+
+            return res.redirect('https://t.me/bekvpn_bot');
         }
 
-        // Robokassa ожидает простой "OK" (или "OK{InvId}" — по вашему договору)
+
+        // Обновляем статус
+        if (sess.status !== "paid") {
+            await this.payments.markPaidByInvId(orderId);
+
+            const vlessKey = await getVlessKey(sess.period);
+
+            const buttons = Markup.inlineKeyboard([
+                {
+                    text: 'Инструкция установки Hyper VPN 📍',
+                    callback_data: CommonCallbacks.GetInstructions,
+                },
+                {
+                    text: 'Тех Поддержка ⚠️',
+                    url: 'https://t.me/hyper_vpn_help'
+                },
+                {
+                    text: '🏠 Главное меню',
+                    callback_data: CommonCallbacks.GetMenu
+                },
+            ], { columns: 1 });
+
+            // Отправляем сообщение пользователю
+            try {
+                await this.bot.telegram.sendMessage(
+                    sess.telegramId,
+                    `Оплата получена. Поздравляем с успешной покупкой подписки на
+HyperVPN на ${sess.period} месяц${sess.period === 1 ? '' : sess.period >= 4 ? 'ев' : 'а'}! ✅ 
+ 
+Ваш купленный ключ (нажмите на него чтобы скопировать)
+
+<pre>${vlessKey}</pre>
+
+Подключите через инструкцию`,
+                    { parse_mode: 'HTML', reply_markup: buttons.reply_markup }
+                );
+            } catch (e) {
+                // логируем, но колбэк подтверждаем
+                console.error('Telegram send error', e);
+            }
+        }
+
         return res.send('OK');
     }
 
-    @Post('success') // SuccessURL (редирект клиента) — можно просто валидацию + редирект на вашу страницу "успех"
+    @Post('payment/success') // SuccessURL (редирект клиента) — можно просто валидацию + редирект на вашу страницу "успех"
     async success(@Req() req: any, @Res() res: any) {
-        // обычно проверяют подпись с PASS1, можно просто редиректнуть на фронт
         return res.redirect('https://t.me/bekvpn_bot');
     }
 
