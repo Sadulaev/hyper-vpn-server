@@ -8,7 +8,9 @@ import { BotModule } from './bot/bot.module';
 import { TelegrafErrorInterceptor } from './app.interceptor';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { PaymentSession } from './payments/entities/payment-session.entity';
+import { PaymentsModule } from './payments/payments.module';
 
 const sessions = new LocalSession({ database: 'session_db.json' })
 
@@ -24,8 +26,21 @@ const sessions = new LocalSession({ database: 'session_db.json' })
       middlewares: [sessions.middleware()],
       token: configuration().tg.token,
     }),
-    BotModule
+     TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: configuration().database.host,
+      port: configuration().database.port,
+      username: configuration().database.username,
+      password: configuration().database.password,
+      database: configuration().database.database,
+      entities: [PaymentSession],
+      synchronize: true,
+      autoLoadEntities: true,
+    }),
+    BotModule,
+    PaymentsModule
   ],
+  
   providers: [
     {
       provide: APP_INTERCEPTOR,

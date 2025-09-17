@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { BotUpdate } from "./bot.update";
 import { BotService } from "./bot.service";
+import { PaymentsModule } from "src/payments/payments.module";
 
 @Module({
-    imports: [ConfigModule],
+    imports: [ConfigModule, PaymentsModule],
     providers: [BotUpdate, BotService],
     exports: [BotUpdate],
 })

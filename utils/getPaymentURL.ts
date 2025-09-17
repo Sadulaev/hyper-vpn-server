@@ -6,6 +6,7 @@ type PaymentInfo = {
     inv_id: number;        // номер счета в магазине
     inv_desc: string;      // описание
     out_summ: string;      // сумма
+    shp_order?: string;       // id для
 }
 
 async function getPaymentURL(payment: PaymentInfo) {
