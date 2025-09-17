@@ -56,8 +56,7 @@ export class BotService {
     ], { columns: 1 });
 
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-menu.jpg');
-    ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: 'HyperVPN - самый быстрый на диком западе', reply_markup: buttons.reply_markup });
-    // ctx.editMessageText('Меню управления клиентами и рассрочками', buttons);
+    ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: '⚡ Hyper VPN  – быстрый и безопасный VPN, который работает на всех устройствах.', reply_markup: buttons.reply_markup });
   }
 
   async getMenu(ctx: CustomContext) {
@@ -79,7 +78,7 @@ export class BotService {
     ctx.answerCbQuery();
     deleteLastMessageIfExist(ctx);
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-menu.jpg');
-    ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: 'HyperVPN - самый быстрый на диком западе', reply_markup: buttons.reply_markup });
+    ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: '⚡ Hyper VPN  – быстрый и безопасный VPN, который работает на всех устройствах.', reply_markup: buttons.reply_markup });
     // ctx.editMessageText('Меню управления клиентами и рассрочками', buttons);
   }
 
