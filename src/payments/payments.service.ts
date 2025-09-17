@@ -27,7 +27,7 @@ export class PaymentsService {
     return calc === (given || '').toUpperCase();
   }
 
-  async createSession(params: { telegramId: string; ttlMinutes?: number }) {
+  async createSession(params: { telegramId: string; ttlMinutes?: number, period?: number }) {
     const invId = Date.now().toString(); // можно заменить на sequence
     const expiresAt =
       params.ttlMinutes ? new Date(Date.now() + params.ttlMinutes * 60_000) : null;
@@ -35,6 +35,7 @@ export class PaymentsService {
     const session = this.repo.create({
       invId,
       telegramId: params.telegramId,
+      period: params.period || 1,
       status: 'pending',
       expiresAt,
     });

@@ -124,7 +124,7 @@ ctx.answerCbQuery();
     ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: replyText, reply_markup: buttons.reply_markup });
   }
 
-  async getPaymentLink(ctx: CustomContext, period: number) {
+  async getPaymentLink(ctx: CustomContext, period: number, sum: number) {
 
     let filePath: string;
 
@@ -141,6 +141,7 @@ ctx.answerCbQuery();
     const session = await this.paymentsService.createSession({
       telegramId: ctx.update.callback_query.from.id.toString(),
       ttlMinutes: 30,
+      period,
     });
 
     const paymentURL = await getPaymentURL({
@@ -149,7 +150,7 @@ ctx.answerCbQuery();
       mrh_pass2: this.configService.get('ROBOKASSA_MERCHANT_PASSWORD_2'),
       inv_id: Number(session.invId),
       inv_desc: '123',
-      out_summ: '5',
+      out_summ: sum.toString(),
       shp_order: session.id,
     })
 

@@ -42,22 +42,22 @@ export class BotUpdate {
 
   @Action(CommonCallbacks.GetOneMonthKey)
   async buyOneMonth(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 1);
+    this.botService.getPaymentLink(ctx, 1, 5);
   }
 
   @Action(CommonCallbacks.GetThreeMonthKey)
   async buyThreeMonth(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 3);
+    this.botService.getPaymentLink(ctx, 3, 6);
   }
 
   @Action(CommonCallbacks.GetSixMonthKey)
   async buySixMonth(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 6);
+    this.botService.getPaymentLink(ctx, 6, 7);
   }
 
   @Action(CommonCallbacks.GetTwelweMonthKey)
   async buyTwelwe(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 12);
+    this.botService.getPaymentLink(ctx, 12, 8);
   }
 
   // End of buy VPN actions ---------------------------

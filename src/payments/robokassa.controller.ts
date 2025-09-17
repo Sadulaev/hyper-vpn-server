@@ -19,11 +19,8 @@ export class RobokassaController {
 
     @Post('payment/approve') // ResultURL (серверный)
     async result(@Req() req: any, @Res() res: any) {
-        console.log(req.body)
 
         const { OutSum, InvId, SignatureValue, ...rest } = req.body;
-
-        console.log(req.body);
 
         const orderId = InvId;
         if (!orderId) {
