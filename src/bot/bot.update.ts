@@ -79,6 +79,11 @@ export class BotUpdate {
     this.botService.getInstructions(ctx);
   }
 
+  @Action(CommonCallbacks.GetInstructionsNoDelete)
+  async getInstructionsNoDelete(@Ctx() ctx: CustomContext) {
+    this.botService.getInstructions(ctx, true);
+  }
+
   @Action(CommonCallbacks.GetIphoneInstructions)
   async getIphoneInstructions(@Ctx() ctx: CustomContext) {
     this.botService.getIphoneInstructions(ctx);
@@ -101,7 +106,7 @@ export class BotUpdate {
   // Other actions
 
   @Action(CommonCallbacks.GetMyKeys)
-  async getMyKeys(@Ctx()  ctx: CustomContext) {
+  async getMyKeys(@Ctx() ctx: CustomContext) {
     this.botService.getMyKeys(ctx);
   }
 }
