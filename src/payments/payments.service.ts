@@ -30,7 +30,10 @@ export class PaymentsService {
 
   async createSession(params: { telegramId: string; ttlMinutes?: number, period?: number, firstName: string, userName: string }) {
     const invId = Date.now().toString(); // можно заменить на sequence
-    const expiresAt = addMonthsPlusOneDay(params.period);
+    const expiresAt =
+      params.ttlMinutes ? new Date(Date.now() + params.ttlMinutes * 60_000) : null;
+
+      const keyExpiresAt = addMonthsPlusOneDay(params.period);
 
     const session = this.repo.create({
       invId,
@@ -40,6 +43,7 @@ export class PaymentsService {
       userName: params.userName || "",
       status: 'pending',
       expiresAt,
+      keyExpiresAt
     });
     const saved = await this.repo.save(session);
     return saved; // id = orderId (uuid), invId = числовой

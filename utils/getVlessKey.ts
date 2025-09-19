@@ -1,6 +1,6 @@
 export async function getVlessKey(period: number): Promise<string> {
   try {
-    const url = 'http://0.0.0.0:5000/get-key';
+    const url = 'http://localhost:5000/get-key';
 
     const res = await fetch(url, {
       method: 'POST',

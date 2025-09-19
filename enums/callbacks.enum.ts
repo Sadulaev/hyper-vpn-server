@@ -1,6 +1,7 @@
 export enum CommonCallbacks {
   // Default actions
   GetMenu = 'common_get_menu',
+  GetMenuNoDelete = 'common_get_menu_no_delete',
   
   // Buy VPN actions
   GetVPNSubscriptions = 'common_get-vpn-subscriptions',
@@ -11,6 +12,7 @@ export enum CommonCallbacks {
 
   // Instructions actions
   GetInstructions = 'common_get-instructions',
+  GetInstructionsNoDelete = 'common_get-instructions-no-delete',
   GetAndroidInstructions = 'common_get-android-instructions',
   GetIphoneInstructions = 'common_get-iphone-instructions',
   GetPCInstructions = 'common_get-pc-instructions',

@@ -27,9 +27,19 @@ export class BotUpdate {
     this.botService.onStart(ctx);
   }
 
+  @Command('menu')
+  async menuCommand(@Ctx() ctx: CustomContext) {
+    this.botService.onStart(ctx);
+  }
+
   @Action(CommonCallbacks.GetMenu)
   async getMenu(@Ctx() ctx: CustomContext) {
     this.botService.getMenu(ctx);
+  }
+
+  @Action(CommonCallbacks.GetMenuNoDelete)
+  async getMenuNoDelte(@Ctx() ctx: CustomContext) {
+    this.botService.getMenu(ctx, true);
   }
   // End of default actions --------------------------
 
@@ -42,22 +52,22 @@ export class BotUpdate {
 
   @Action(CommonCallbacks.GetOneMonthKey)
   async buyOneMonth(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 1, 5);
+    this.botService.getPaymentLink(ctx, 1, 189);
   }
 
   @Action(CommonCallbacks.GetThreeMonthKey)
   async buyThreeMonth(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 3, 6);
+    this.botService.getPaymentLink(ctx, 3, 449);
   }
 
   @Action(CommonCallbacks.GetSixMonthKey)
   async buySixMonth(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 6, 7);
+    this.botService.getPaymentLink(ctx, 6, 699);
   }
 
   @Action(CommonCallbacks.GetTwelweMonthKey)
   async buyTwelwe(@Ctx() ctx: CustomContext) {
-    this.botService.getPaymentLink(ctx, 12, 8);
+    this.botService.getPaymentLink(ctx, 12, 1499);
   }
 
   // End of buy VPN actions ---------------------------

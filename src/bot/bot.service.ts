@@ -59,7 +59,7 @@ export class BotService {
     ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: '⚡ Hyper VPN  – быстрый и безопасный VPN, который работает на всех устройствах.', reply_markup: buttons.reply_markup });
   }
 
-  async getMenu(ctx: CustomContext) {
+  async getMenu(ctx: CustomContext, saveMessage?: boolean) {
     const buttons = Markup.inlineKeyboard([
       {
         text: 'Приобрести VPN 🛜',
@@ -76,7 +76,9 @@ export class BotService {
     ], { columns: 1 });
 
     ctx.answerCbQuery();
-    deleteLastMessageIfExist(ctx);
+    if (!saveMessage) {
+      deleteLastMessageIfExist(ctx);
+    }
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-menu.jpg');
     ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: '⚡ Hyper VPN  – быстрый и безопасный VPN, который работает на всех устройствах.', reply_markup: buttons.reply_markup });
     // ctx.editMessageText('Меню управления клиентами и рассрочками', buttons);
@@ -118,7 +120,7 @@ export class BotService {
 
 💡Доступ выдается на телефон, компьютер, планшет и телевизор`
 
-ctx.answerCbQuery();
+    ctx.answerCbQuery();
     deleteLastMessageIfExist(ctx);
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-subscriptions.jpg');
     ctx.replyWithPhoto({ source: createReadStream(filePath) }, { caption: replyText, reply_markup: buttons.reply_markup });
@@ -182,7 +184,7 @@ ctx.answerCbQuery();
   // End of buy VPN actions --------------------------------------------------------------------------
 
   // Get Instructions actions ------------------------------------------------------------------------
-  async getInstructions(ctx: CustomContext) {
+  async getInstructions(ctx: CustomContext, saveMessage?: boolean) {
 
     const buttons = Markup.inlineKeyboard([
       {
@@ -222,11 +224,13 @@ ctx.answerCbQuery();
 
 4. 📋 Выберите 'Вставить из буфера обмена' для добавления подписки.
 
-💬 Если у вас возникнут вопросы, не стесняйтесь обращаться в поддержку <a href="https://t.me/topvpnhelp_bot">@topvpnhelp_bot</a>`;
+💬 Если у вас возникнут вопросы, не стесняйтесь обращаться в поддержку <a href="https://t.me/hyper_vpn_help">@hyper_vpn_help</a>`;
 
 
-ctx.answerCbQuery();
-    deleteLastMessageIfExist(ctx);
+    ctx.answerCbQuery();
+    if (!saveMessage) {
+      deleteLastMessageIfExist(ctx);
+    }
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-instructions.jpg');
 
     await ctx.replyWithPhoto(
@@ -267,7 +271,7 @@ ctx.answerCbQuery();
 🌐 <b>5.</b> Нажмите «Подключиться (Connect)» — VPN активируется и начнёт работать.`;
 
 
-ctx.answerCbQuery();
+    ctx.answerCbQuery();
     deleteLastMessageIfExist(ctx);
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-instructions.jpg');
 
@@ -309,7 +313,7 @@ ctx.answerCbQuery();
 ▶️ <b>5.</b> Нажмите на кнопку для подключения в центре экрана — VPN начнёт работать.`;
 
 
-ctx.answerCbQuery();
+    ctx.answerCbQuery();
     deleteLastMessageIfExist(ctx);
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-instructions.jpg');
 
@@ -351,7 +355,7 @@ ctx.answerCbQuery();
 ▶️ <b>5.</b> Нажмите на кнопку включения в центре экрана — VPN начнёт работать.`;
 
 
-ctx.answerCbQuery();
+    ctx.answerCbQuery();
     deleteLastMessageIfExist(ctx);
     const filePath = join(__dirname, '..', 'assets', 'hyper-vpn-instructions.jpg');
 

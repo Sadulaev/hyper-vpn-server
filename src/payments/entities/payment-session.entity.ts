@@ -16,19 +16,19 @@ export class PaymentSession {
   @Column({ type: 'bigint' })
   telegramId!: string; // хранить как текст/bigint (tg id может быть большим)
 
-  @Column({type: 'varchar', nullable: true})
+  @Column({ type: 'varchar', nullable: true })
   firstName: string;
 
-  @Column({type: 'varchar', nullable: true})
+  @Column({ type: 'varchar', nullable: true })
   userName: string;
 
-  @Column({type: 'varchar', nullable: true})
+  @Column({ type: 'varchar', nullable: true })
   vlessKey: string;
 
   @Column({ type: 'varchar', length: 16, default: 'pending' })
   status!: PaymentStatus;
 
-  @Column({ type: 'int', default: 1})
+  @Column({ type: 'int', default: 1 })
   period: number;
 
   @CreateDateColumn()
@@ -36,4 +36,7 @@ export class PaymentSession {
 
   @Column({ type: 'timestamptz', nullable: true })
   expiresAt!: Date | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  keyExpiresAt!: Date | null;
 }
