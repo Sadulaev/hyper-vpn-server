@@ -18,4 +18,6 @@ export enum CommonCallbacks {
   GetPCInstructions = 'common_get-pc-instructions',
   GetTVInstructions = 'common_get-tv-instructions',
 
+  // Others (for now)
+  GetMyKeys = 'common_get-my-keys',
 }

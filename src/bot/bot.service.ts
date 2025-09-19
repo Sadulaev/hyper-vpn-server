@@ -46,6 +46,10 @@ export class BotService {
         callback_data: CommonCallbacks.GetVPNSubscriptions,
       },
       {
+        text: 'Мои ключи 🔑',
+        callback_data: CommonCallbacks.GetMyKeys
+      },
+      {
         text: 'Инструкция установки Hyper VPN 📍',
         callback_data: CommonCallbacks.GetInstructions,
       },
@@ -139,8 +143,6 @@ export class BotService {
     } else {
       filePath = join(__dirname, '..', 'assets', 'hyper-vpn-one-m.jpg');
     }
-
-    console.log(ctx.update.callback_query.from)
 
     const session = await this.paymentsService.createSession({
       telegramId: ctx.update.callback_query.from.id.toString(),
@@ -367,6 +369,39 @@ export class BotService {
         reply_markup: buttons.reply_markup,
       }
     );
+  }
+
+  // Other actions
+  async getMyKeys(ctx: CustomContext) {
+    const myRecords = await this.paymentsService.getPaidAndNotExpiredKeysByTgId(ctx.update.callback_query.from.id.toString())
+
+    const buttons = Markup.inlineKeyboard([
+      {
+        text: '🏠 Главное меню',
+        callback_data: CommonCallbacks.GetInstructions
+      },
+      {
+        text: '⬅️ Назад',
+        callback_data: CommonCallbacks.GetMenu
+      },
+    ], { columns: 1 });
+
+    const message = myRecords.length ? `<b>У вас нет активных ключей</b>
+
+Если вы купили ключ и он не появился пожалуйста напишите в поддержку <a href="https://t.me/hyper_vpn_help">@hyper_vpn_help</a>`
+
+      :
+
+      `<b>Ваши активные ключи</b>
+    
+    ${myRecords.map((record, index) => `<b><i>Ключ ${index}</i></b>
+<pre>${record}</pre>
+Дата создания - ${record.createdAt} / Будет действовать до - ${record.keyExpiresAt}`
+    )}`
+
+  ctx.answerCbQuery();
+  deleteLastMessageIfExist(ctx);
+  ctx.reply(message, buttons);
   }
 
 }

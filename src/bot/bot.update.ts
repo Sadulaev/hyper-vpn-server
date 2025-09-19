@@ -97,4 +97,11 @@ export class BotUpdate {
   @Action(CommonCallbacks.GetTVInstructions)
   async getTVInstructions(@Ctx() ctx: CustomContext) {
   }
+
+  // Other actions
+
+  @Action(CommonCallbacks.GetMyKeys)
+  async getMyKeys(@Ctx()  ctx: CustomContext) {
+    this.botService.getMyKeys(ctx);
+  }
 }

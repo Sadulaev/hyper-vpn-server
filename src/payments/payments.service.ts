@@ -1,7 +1,7 @@
 // src/payments/payments.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, MoreThan } from 'typeorm';
 import { PaymentSession } from './entities/payment-session.entity';
 import * as crypto from 'crypto';
 import { addMonthsPlusOneDay } from 'utils/addMonthPlusOneDay';
@@ -14,19 +14,6 @@ export class PaymentsService {
     @InjectRepository(PaymentSession)
     private readonly repo: Repository<PaymentSession>,
   ) {}
-
-  private buildSignatureStr(outSum: string, invId: string, secret: string, shp: ShpMap) {
-    // base: OutSum:InvId:Secret + :shp_key=value (по ключам в лексикографическом порядке)
-    const keys = Object.keys(shp).sort();
-    const tail = keys.map(k => `${k}=${shp[k]}`).join(':');
-    return tail ? `${outSum}:${invId}:${secret}:${tail}` : `${outSum}:${invId}:${secret}`;
-  }
-
-  verifySignature(outSum: string, invId: string, given: string, secret: string, shp: ShpMap) {
-    const s = this.buildSignatureStr(outSum, invId, secret, shp);
-    const calc = crypto.createHash('md5').update(s).digest('hex').toUpperCase();
-    return calc === (given || '').toUpperCase();
-  }
 
   async createSession(params: { telegramId: string; ttlMinutes?: number, period?: number, firstName: string, userName: string }) {
     const invId = Date.now().toString(); // можно заменить на sequence
@@ -60,6 +47,17 @@ export class PaymentsService {
 
   async findOrderByInvId(invId: string) {
     return this.repo.findOne({ where: { invId } });
+  }
+
+  async getPaidAndNotExpiredKeysByTgId(tgId: string) {
+    const now = new Date();
+    return this.repo.find({
+      where: {
+        telegramId: tgId,
+        status: 'paid',
+        keyExpiresAt: MoreThan(now),
+      },
+    });
   }
 
   async cleanupExpired() {
