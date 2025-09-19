@@ -16,6 +16,15 @@ export class PaymentSession {
   @Column({ type: 'bigint' })
   telegramId!: string; // хранить как текст/bigint (tg id может быть большим)
 
+  @Column({type: 'varchar'})
+  firstName: string;
+
+  @Column({type: 'varchar'})
+  userName: string;
+
+  @Column({type: 'varchar'})
+  vlessKey: string;
+
   @Column({ type: 'varchar', length: 16, default: 'pending' })
   status!: PaymentStatus;
 

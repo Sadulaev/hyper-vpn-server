@@ -11,6 +11,7 @@ import { join } from 'path';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { PaymentSession } from './payments/entities/payment-session.entity';
 import { PaymentsModule } from './payments/payments.module';
+import { GoogleSheetsModule } from './integrations/google-sheets/google-sheets.module';
 
 const sessions = new LocalSession({ database: 'session_db.json' })
 
@@ -38,7 +39,8 @@ const sessions = new LocalSession({ database: 'session_db.json' })
       autoLoadEntities: true,
     }),
     BotModule,
-    PaymentsModule
+    PaymentsModule,
+    GoogleSheetsModule
   ],
   
   providers: [

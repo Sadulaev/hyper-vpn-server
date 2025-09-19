@@ -11,8 +11,6 @@ export async function getVlessKey(period: number): Promise<string> {
     const data: unknown = await res.json();
     const key = (data as any)?.vless;
 
-    console.log('key')
-
     return key;
   } catch (err) {
     console.log(err);

@@ -5,6 +5,7 @@ import { Markup, Telegraf } from 'telegraf';
 import * as bodyParser from 'body-parser'; // в main.ts повесите app.use(bodyParser.urlencoded({extended:true}))
 import { getVlessKey } from 'utils/getVlessKey';
 import { CommonCallbacks } from 'enums/callbacks.enum';
+import { GoogleSheetsService } from 'src/integrations/google-sheets/google-sheets.service';
 
 @Controller('/')
 export class RobokassaController {
@@ -13,6 +14,7 @@ export class RobokassaController {
     constructor(
         private readonly payments: PaymentsService,
         private readonly configService: ConfigService,
+        private readonly sheets: GoogleSheetsService
     ) {
         this.bot = new Telegraf(this.configService.get('TG_TOKEN')!);
     }
@@ -39,10 +41,15 @@ export class RobokassaController {
 
 
         // Обновляем статус
-        if (sess.status !== "paid") {
-            await this.payments.markPaidByInvId(orderId);
+        if (sess.status === "pending") {
 
             const vlessKey = await getVlessKey(sess.period);
+
+            await this.payments.markPaidAndAddKey(orderId, vlessKey);
+
+            const sheetName = 'Лист1';
+            const now = formatDateToLocal();
+            await this.sheets.appendRow(sheetName, [sess.id, sess.firstName, sess.userName, '', now]);
 
             const buttons = Markup.inlineKeyboard([
                 {
