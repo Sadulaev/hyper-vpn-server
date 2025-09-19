@@ -217,7 +217,7 @@ export class BotService {
 
    -  Для iPhone: <a href="https://apps.apple.com/ru/app/v2raytun/id6476628951">V2RayTun</a>
    - Для Android: <a href="https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru">V2RayTun</a>
-   - 💻 Для Компьютера: <a href="https://github.com/hiddify/hiddify-next/releases/latest/download/Hiddify-Windows-Setup-x64.Msix">Hiddify Next</a>
+   - 💻 Для Компьютера: <a href="https://hiddify.com">Hiddify Next</a>
    - 📺 Для TV:  <a href="https://play.google.com/store/apps/details?id=com.vpn4tv.hiddify">VPN4TV</a>
 
 2. 🔑 Скопируйте предоставленную ссылку, которую вы получили ранее.
@@ -263,7 +263,7 @@ export class BotService {
 
 📦 <b>2.</b> Скачайте приложение Hiddify Next:
 👉 для загрузки:
-<a href="https://github.com/hiddify/hiddify-next/releases/download/latest/HiddifyNext.msix">Скачать Hiddify для Windows (.msix файл)</a>
+<a href="https://hiddify.com">Скачать Hiddify для Windows (.msix файл)</a>
 
 🛠 <b>3.</b> Установите приложение:
 Откройте скачанный файл. Если система запросит разрешение — нажмите «Установить».
