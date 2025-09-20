@@ -51,13 +51,15 @@ export class PaymentsService {
 
   async getPaidAndNotExpiredKeysByTgId(tgId: string) {
     const now = new Date();
-    return this.repo.find({
+    const result = await this.repo.find({
       where: {
         telegramId: tgId,
         status: 'paid',
         keyExpiresAt: MoreThan(now),
       },
     });
+
+    return result.filter(s => !!s.vlessKey)
   }
 
   async cleanupExpired() {

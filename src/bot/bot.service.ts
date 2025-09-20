@@ -13,6 +13,7 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { deleteLastMessageIfExist } from 'utils/deleteMessage';
 import { PaymentsService } from 'src/payments/payments.service';
+import { formatDateToLocal } from 'utils/formatDateToLocal';
 
 @Injectable()
 export class BotService {
@@ -68,6 +69,10 @@ export class BotService {
       {
         text: 'Приобрести VPN 🛜',
         callback_data: CommonCallbacks.GetVPNSubscriptions,
+      },
+      {
+        text: 'Мои ключи 🔑',
+        callback_data: CommonCallbacks.GetMyKeys
       },
       {
         text: 'Инструкция установки Hyper VPN 📍',
@@ -377,31 +382,31 @@ export class BotService {
 
     const buttons = Markup.inlineKeyboard([
       {
-        text: '🏠 Главное меню',
-        callback_data: CommonCallbacks.GetInstructions
-      },
-      {
         text: '⬅️ Назад',
         callback_data: CommonCallbacks.GetMenu
       },
     ], { columns: 1 });
 
-    const message = myRecords.length ? `<b>У вас нет активных ключей</b>
+    const message = !myRecords.length ? `<b>У вас нет активных ключей</b>
 
-Если вы купили ключ и он не появился пожалуйста напишите в поддержку <a href="https://t.me/hyper_vpn_help">@hyper_vpn_help</a>`
+Если вы купили ключ и он не появился пожалуйста напишите в поддержку 
+
+<a href="https://t.me/hyper_vpn_help">@hyper_vpn_help</a>`
 
       :
 
       `<b>Ваши активные ключи</b>
-    
-    ${myRecords.map((record, index) => `<b><i>Ключ ${index}</i></b>
-<pre>${record}</pre>
-Дата создания - ${record.createdAt} / Будет действовать до - ${record.keyExpiresAt}`
-    )}`
+    ${myRecords.map((record, index) => `
+
+<b><i>Ключ ${index + 1}</i></b>
+<pre>${record.vlessKey}</pre>
+Дата создания - ${formatDateToLocal(record.createdAt, true)}
+
+Будет действовать до - ${formatDateToLocal(record.keyExpiresAt, true)}`)}`
 
   ctx.answerCbQuery();
   deleteLastMessageIfExist(ctx);
-  ctx.reply(message, buttons);
+  ctx.reply(message, {parse_mode: 'HTML', reply_markup: buttons.reply_markup});
   }
 
 }

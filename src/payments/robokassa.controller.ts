@@ -6,6 +6,7 @@ import * as bodyParser from 'body-parser'; // в main.ts повесите app.us
 import { getVlessKey } from 'utils/getVlessKey';
 import { CommonCallbacks } from 'enums/callbacks.enum';
 import { GoogleSheetsService } from 'src/integrations/google-sheets/google-sheets.service';
+import { formatDateToLocal } from 'utils/formatDateToLocal';
 
 @Controller('/')
 export class RobokassaController {
@@ -23,6 +24,8 @@ export class RobokassaController {
     async result(@Req() req: any, @Res() res: any) {
 
         const { OutSum, InvId, SignatureValue, ...rest } = req.body;
+
+        console.log(req.body);
 
         const orderId = InvId;
         if (!orderId) {
@@ -45,16 +48,18 @@ export class RobokassaController {
 
             const vlessKey = await getVlessKey(sess.period);
 
+            console.log(vlessKey)
+
             await this.payments.markPaidAndAddKey(orderId, vlessKey);
 
             const sheetName = 'Лист1';
             const now = formatDateToLocal();
-            await this.sheets.appendRow(sheetName, [sess.id, sess.firstName, sess.userName, '', now]);
+            await this.sheets.appendRow(sheetName, [sess.telegramId, sess.firstName, sess.userName, '', now]);
 
             const buttons = Markup.inlineKeyboard([
                 {
                     text: 'Инструкция установки Hyper VPN 📍',
-                    callback_data: CommonCallbacks.GetInstructions,
+                    callback_data: CommonCallbacks.GetInstructionsNoDelete,
                 },
                 {
                     text: 'Тех Поддержка ⚠️',
@@ -62,7 +67,7 @@ export class RobokassaController {
                 },
                 {
                     text: '🏠 Главное меню',
-                    callback_data: CommonCallbacks.GetMenu
+                    callback_data: CommonCallbacks.GetMenuNoDelete
                 },
             ], { columns: 1 });
 
