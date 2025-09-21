@@ -153,8 +153,8 @@ export class BotService {
       telegramId: ctx.update.callback_query.from.id.toString(),
       ttlMinutes: 30,
       period,
-      firstName: ctx.update.callback_query.from.first_name.toString(),
-      userName: ctx.update.callback_query.from.username.toString()
+      firstName: ctx.update.callback_query.from.first_name?.toString(),
+      userName: ctx.update.callback_query.from.username?.toString()
     });
 
     const paymentURL = await getPaymentURL({
