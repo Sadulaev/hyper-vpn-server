@@ -34,16 +34,34 @@ export class GoogleSheetsService {
                 requestBody: { values: [values] },
             });
             return true
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             return false;
         }
-        
+
     }
 
     async readRange(range = 'Лист1!A1:D5') {
         const spreadsheetId = process.env.GOOGLE_SHEETS_ID!;
         const res = await this.sheets.spreadsheets.values.get({ spreadsheetId, range });
         return res.data.values ?? [];
+    }
+
+    async getUniqueTelegramIdsFromSheet() {
+        const spreadsheetId = this.configService.get('GOOGLE_SHEETS_ID')!;
+        const sheetName = 'Лист1';
+
+        const res = await this.sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: `${sheetName}!A:A`, // только первый столбец
+        });
+
+        const rows = res.data.values?.flat() ?? [];           // массив значений из колонки A
+        const valuesNoHeader = rows.slice(1);                  // если первая строка — заголовок
+        const unique = [...new Set(valuesNoHeader
+            .map(v => (v ?? '').toString().trim())
+            .filter(v => v !== ''))];
+
+        return unique;
     }
 }

@@ -13,11 +13,16 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { deleteLastMessageIfExist } from 'utils/deleteMessage';
 import { PaymentsService } from 'src/payments/payments.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TgUsers } from '../../entities/tg-user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BotService {
   constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
+    @InjectRepository(TgUsers)
+    private readonly repo: Repository<TgUsers>,
+    @InjectBot('userBot') private readonly bot: Telegraf<Context>,
     private readonly configService: ConfigService,
     private readonly paymentsService: PaymentsService
   ) { }
@@ -26,15 +31,11 @@ export class BotService {
   // -------------------------------------------------------------------------------------------------------
 
   async onStart(ctx: CustomContext) {
-    // this.bot.telegram.setMyCommands([{
-    //   command: 'start',
-    //   description: 'Старт'
-    // },
-    // {
-    //   command: '/tech-support',
-    //   description: 'Поддержка'
-    // }]);
-
+    await this.repo.save({
+      id: ctx.message.from.id,
+      firstName: ctx.message.from.first_name,
+      userName: ctx.message.from.username
+    })
 
     this.bot.telegram.callApi('setMyCommands', {
       commands: [{ command: '/start', description: 'Старт' }],
@@ -397,11 +398,11 @@ export class BotService {
     ${myRecords.map((record, index) => `<b><i>Ключ ${index}</i></b>
 <pre>${record}</pre>
 Дата создания - ${record.createdAt} / Будет действовать до - ${record.keyExpiresAt}`
-    )}`
+      )}`
 
-  ctx.answerCbQuery();
-  deleteLastMessageIfExist(ctx);
-  ctx.reply(message, buttons);
+    ctx.answerCbQuery();
+    deleteLastMessageIfExist(ctx);
+    ctx.reply(message, buttons);
   }
 
 }

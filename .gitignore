@@ -6,6 +6,7 @@
 
 # tg sessions file
 session_db.json
+admin_session_db.json
 
 #images dir
 /uploads/*

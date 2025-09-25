@@ -1,4 +1,3 @@
-// src/payments/entities/payment-session.entity.ts
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'expired';
@@ -10,7 +9,7 @@ export class PaymentSession {
   @PrimaryGeneratedColumn()
   id!: string;
 
-  @Column({ type: 'bigint', unique: true })
+  @Column({ type: 'bigint', unique: true, nullable: true })
   invId!: string; // числовой InvId, Robokassa вернёт его в колбэке
 
   @Column({ type: 'bigint' })

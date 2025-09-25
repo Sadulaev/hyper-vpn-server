@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, MoreThan } from 'typeorm';
-import { PaymentSession } from './entities/payment-session.entity';
+import { PaymentSession } from '../../entities/payment-session.entity';
 import * as crypto from 'crypto';
 import { addMonthsPlusOneDay } from 'utils/addMonthPlusOneDay';
 

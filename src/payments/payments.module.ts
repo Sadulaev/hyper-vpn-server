@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PaymentSession } from './entities/payment-session.entity';
+import { PaymentSession } from '../../entities/payment-session.entity';
 import { PaymentsService } from './payments.service';
 import { RobokassaController } from './robokassa.controller';
 import { ConfigModule } from '@nestjs/config';

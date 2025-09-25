@@ -17,7 +17,7 @@ import { deleteLastMessageIfExist } from 'utils/deleteMessage';
 @Update()
 export class BotUpdate {
   constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
+    @InjectBot('userBot') private readonly bot: Telegraf<Context>,
     private readonly botService: BotService
   ) { }
 

@@ -14,6 +14,8 @@ export default () => ({
     },
     tg: {
         token: process.env.TG_TOKEN,
-        admin: process.env.TG_SUPERADMIN_ID
+    },
+    tgAmdin: {
+        token: process.env.TG_ADMIN_TOKEN
     }
 });
