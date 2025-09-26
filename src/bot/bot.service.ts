@@ -18,6 +18,7 @@ import { TgUsers } from '../../entities/tg-user.entity';
 import { Repository } from 'typeorm';
 import { BotState } from 'entities/bots-state.entity';
 import { GoogleSheetsService } from 'src/integrations/google-sheets/google-sheets.service';
+import { formatDateToLocal } from 'utils/formatDateToLocal';
 
 @Injectable()
 export class BotService {
@@ -82,6 +83,10 @@ export class BotService {
       {
         text: 'Приобрести VPN 🛜',
         callback_data: CommonCallbacks.GetVPNSubscriptions,
+      },
+      {
+        text: 'Мои ключи 🔑',
+        callback_data: CommonCallbacks.GetMyKeys
       },
       {
         text: 'Инструкция установки Hyper VPN 📍',
@@ -162,8 +167,8 @@ export class BotService {
       telegramId: ctx.update.callback_query.from.id.toString(),
       ttlMinutes: 30,
       period,
-      firstName: ctx.update.callback_query.from.first_name.toString(),
-      userName: ctx.update.callback_query.from.username.toString()
+      firstName: ctx.update.callback_query.from.first_name?.toString(),
+      userName: ctx.update.callback_query.from.username?.toString()
     });
 
     const paymentURL = await getPaymentURL({
@@ -230,8 +235,8 @@ export class BotService {
 1. 📱 Скачайте приложение для вашего устройства:
 
    -  Для iPhone: <a href="https://apps.apple.com/ru/app/v2raytun/id6476628951">V2RayTun</a>
-   - Для Android: <a href="https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru">V2RayTun</a>
-   - 💻 Для Компьютера: <a href="https://github.com/hiddify/hiddify-next/releases/latest/download/Hiddify-Windows-Setup-x64.Msix">Hiddify Next</a>
+   - Для Android: <a href="https://play.google.com/store/apps/details?id=com.v2raytun.android">V2RayTun</a>
+   - 💻 Для Компьютера: <a href="https://hiddify.com">Hiddify Next</a>
    - 📺 Для TV:  <a href="https://play.google.com/store/apps/details?id=com.vpn4tv.hiddify">VPN4TV</a>
 
 2. 🔑 Скопируйте предоставленную ссылку, которую вы получили ранее.
@@ -277,7 +282,7 @@ export class BotService {
 
 📦 <b>2.</b> Скачайте приложение Hiddify Next:
 👉 для загрузки:
-<a href="https://github.com/hiddify/hiddify-next/releases/download/latest/HiddifyNext.msix">Скачать Hiddify для Windows (.msix файл)</a>
+<a href="https://hiddify.com">Скачать Hiddify для Windows (.msix файл)</a>
 
 🛠 <b>3.</b> Установите приложение:
 Откройте скачанный файл. Если система запросит разрешение — нажмите «Установить».
@@ -320,7 +325,7 @@ export class BotService {
 
 📦 <b>2.</b> Установите приложение V2RayTun:
 👉 чтобы открыть Google Play:
-<a href="https://play.google.com/store/apps/details?id=com.v2ray.tun">V2RayTun в Google Play</a>
+<a href="https://play.google.com/store/apps/details?id=com.v2raytun.android">V2RayTun в Google Play</a>
 
 📲 <b>3.</b> После установки скопируйте ваш купленный ключ и вставьте в приложение, нажав справа наверху плюс — «<i>Добавить из буфера</i>».
 
@@ -391,31 +396,31 @@ export class BotService {
 
     const buttons = Markup.inlineKeyboard([
       {
-        text: '🏠 Главное меню',
-        callback_data: CommonCallbacks.GetInstructions
-      },
-      {
         text: '⬅️ Назад',
         callback_data: CommonCallbacks.GetMenu
       },
     ], { columns: 1 });
 
-    const message = myRecords.length ? `<b>У вас нет активных ключей</b>
+    const message = !myRecords.length ? `<b>У вас нет активных ключей</b>
 
-Если вы купили ключ и он не появился пожалуйста напишите в поддержку <a href="https://t.me/hyper_vpn_help">@hyper_vpn_help</a>`
+Если вы купили ключ и он не появился пожалуйста напишите в поддержку 
+
+<a href="https://t.me/hyper_vpn_help">@hyper_vpn_help</a>`
 
       :
 
       `<b>Ваши активные ключи</b>
-    
-    ${myRecords.map((record, index) => `<b><i>Ключ ${index}</i></b>
-<pre>${record}</pre>
-Дата создания - ${record.createdAt} / Будет действовать до - ${record.keyExpiresAt}`
-      )}`
+    ${myRecords.map((record, index) => `
 
-    ctx.answerCbQuery();
-    deleteLastMessageIfExist(ctx);
-    ctx.reply(message, buttons);
+<b><i>Ключ ${index + 1}</i></b>
+<pre>${record.vlessKey}</pre>
+Дата создания - ${formatDateToLocal(record.createdAt, true)}
+
+Будет действовать до - ${formatDateToLocal(record.keyExpiresAt, true)}`)}`
+
+  ctx.answerCbQuery();
+  deleteLastMessageIfExist(ctx);
+  ctx.reply(message, {parse_mode: 'HTML', reply_markup: buttons.reply_markup});
   }
 
   async getBotState(name: string) {
