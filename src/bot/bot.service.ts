@@ -221,7 +221,7 @@ export class BotService {
 1. 📱 Скачайте приложение для вашего устройства:
 
    -  Для iPhone: <a href="https://apps.apple.com/ru/app/v2raytun/id6476628951">V2RayTun</a>
-   - Для Android: <a href="https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru">V2RayTun</a>
+   - Для Android: <a href="https://play.google.com/store/apps/details?id=com.v2raytun.android">V2RayTun</a>
    - 💻 Для Компьютера: <a href="https://hiddify.com">Hiddify Next</a>
    - 📺 Для TV:  <a href="https://play.google.com/store/apps/details?id=com.vpn4tv.hiddify">VPN4TV</a>
 
@@ -311,7 +311,7 @@ export class BotService {
 
 📦 <b>2.</b> Установите приложение V2RayTun:
 👉 чтобы открыть Google Play:
-<a href="https://play.google.com/store/apps/details?id=com.v2ray.tun">V2RayTun в Google Play</a>
+<a href="https://play.google.com/store/apps/details?id=com.v2raytun.android">V2RayTun в Google Play</a>
 
 📲 <b>3.</b> После установки скопируйте ваш купленный ключ и вставьте в приложение, нажав справа наверху плюс — «<i>Добавить из буфера</i>».
 
