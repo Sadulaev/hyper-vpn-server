@@ -16,26 +16,39 @@ import { PaymentsService } from 'src/payments/payments.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TgUsers } from '../../entities/tg-user.entity';
 import { Repository } from 'typeorm';
+import { BotState } from 'entities/bots-state.entity';
+import { GoogleSheetsService } from 'src/integrations/google-sheets/google-sheets.service';
 
 @Injectable()
 export class BotService {
   constructor(
     @InjectRepository(TgUsers)
     private readonly repo: Repository<TgUsers>,
+    @InjectRepository(BotState)
+    private readonly botStateRepo: Repository<BotState>,
     @InjectBot('userBot') private readonly bot: Telegraf<Context>,
     private readonly configService: ConfigService,
-    private readonly paymentsService: PaymentsService
+    private readonly paymentsService: PaymentsService,
+    private readonly sheets: GoogleSheetsService
+
   ) { }
 
   // Default actions
   // -------------------------------------------------------------------------------------------------------
 
   async onStart(ctx: CustomContext) {
-    await this.repo.save({
-      id: ctx.message.from.id,
-      firstName: ctx.message.from.first_name,
-      userName: ctx.message.from.username
-    })
+    const tgUser = await this.repo.findOne({ where: { id: ctx.message.from.id } })
+
+    if (!tgUser) {
+      await this.repo.save(
+        this.repo.create({
+          id: ctx.message.from.id,
+          firstName: ctx.message.from.first_name || '',
+          userName: ctx.message.from.username || '',
+        }),
+      )
+      await this.sheets.appendRow('Лист3', [ctx.message.from.id, ctx.message.from.first_name || '', ctx.message.from.username || '']);
+    }
 
     this.bot.telegram.callApi('setMyCommands', {
       commands: [{ command: '/start', description: 'Старт' }],
@@ -405,4 +418,13 @@ export class BotService {
     ctx.reply(message, buttons);
   }
 
+  async getBotState(name: string) {
+    const state =
+      (await this.botStateRepo.findOne({ where: { name } })) ??
+      (await this.botStateRepo.save(
+        this.botStateRepo.create({ name, enabled: true }),
+      ));
+
+    return state;
+  }
 }

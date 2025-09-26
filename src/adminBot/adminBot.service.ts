@@ -13,6 +13,10 @@ import { CustomContext } from "types/context";
 import { deleteLastMessageIfExist } from "utils/deleteMessage";
 import { MessageBroadcastService } from "./message-broadcast.service";
 import { all } from "axios";
+import { BotState } from "entities/bots-state.entity";
+import { getServersLoads } from "utils/getServersLoads";
+import { BotStateService } from "src/bot-state/bot-state.service";
+import { getVlessKey } from "utils/getVlessKey";
 
 @Injectable()
 export class AdminBotService {
@@ -21,11 +25,17 @@ export class AdminBotService {
         // @InjectBot('adminBot') private readonly adminBot: Telegraf<Context>,
         @InjectRepository(TgUsers)
         private readonly repo: Repository<TgUsers>,
+        @InjectRepository(BotState)
+        private readonly botStateRepo: Repository<BotState>,
         private readonly sheetsService: GoogleSheetsService,
         private readonly messageBroadcastService: MessageBroadcastService,
+        private readonly botStateService: BotStateService,
     ) { }
     async onStart(ctx: CustomContext) {
         ctx.session.status = undefined;
+
+        const state = await this.botStateService.getBotState('userBot');
+
         const buttons = Markup.inlineKeyboard([
             {
                 text: 'Отправить сообщение всем ✉️',
@@ -37,13 +47,12 @@ export class AdminBotService {
             },
             {
                 text: 'Получить ключ 🔑',
-                callback_data: AdminCallbacksEnum.GetKeys,
+                callback_data: AdminCallbacksEnum.OpenGenerateKeysMenu,
             },
             {
-                text: 'Выключить HyperVPN бот 🔐',
-                callback_data: AdminCallbacksEnum.TurnOffBot,
+                text: !state.enabled ? 'Включить HyperVPN бот 🔐' : 'Выключить HyperVPN бот 🔐',
+                callback_data: !state.enabled ? AdminCallbacksEnum.TurnOnBot : AdminCallbacksEnum.TurnOffBot,
             },
-
         ], { columns: 1 });
 
         ctx.reply('Выбери команду', buttons)
@@ -51,6 +60,9 @@ export class AdminBotService {
 
     async getMenu(ctx: CustomContext) {
         ctx.session.status = undefined;
+
+        const state = await this.botStateService.getBotState('userBot');
+
         const buttons = Markup.inlineKeyboard([
             {
                 text: 'Отправить сообщение всем ✉️',
@@ -65,10 +77,9 @@ export class AdminBotService {
                 callback_data: AdminCallbacksEnum.GetKeys,
             },
             {
-                text: 'Выключить HyperVPN бот 🔐',
-                callback_data: AdminCallbacksEnum.TurnOffBot,
+                text: !state.enabled ? 'Включить HyperVPN бот 🔐' : 'Выключить HyperVPN бот 🔐',
+                callback_data: !state.enabled ? AdminCallbacksEnum.TurnOnBot : AdminCallbacksEnum.TurnOffBot,
             },
-
         ], { columns: 1 });
 
         ctx.answerCbQuery();
@@ -105,5 +116,82 @@ export class AdminBotService {
 
         ctx.session.status = undefined;
         ctx.reply('Отправка завершена');
+    }
+
+    async disableUserBot(ctx: CustomContext) {
+        const state =
+            (await this.botStateRepo.findOne({ where: { name: 'userBot' } })) ??
+            (await this.botStateRepo.save(
+                this.botStateRepo.create({ name: 'userBot', enabled: true }),
+            ));
+
+        if (state.enabled) {
+            await this.botStateRepo.update(state.id, { enabled: false })
+        }
+
+        ctx.answerCbQuery();
+        ctx.reply('Бот был успешно выключен')
+        this.onStart(ctx);
+    }
+
+    async enableUserBot(ctx: CustomContext) {
+        const state =
+            (await this.botStateRepo.findOne({ where: { name: 'userBot' } })) ??
+            (await this.botStateRepo.save(
+                this.botStateRepo.create({ name: 'userBot', enabled: true }),
+            ));
+
+        if (!state.enabled) {
+            await this.botStateRepo.update(state.id, { enabled: true })
+        }
+
+        ctx.answerCbQuery();
+        ctx.reply('Бот был успешно включен')
+        this.onStart(ctx);
+    }
+
+    async getAllServers(ctx: CustomContext) {
+        const loads = await getServersLoads();
+
+        console.log(loads);
+
+        ctx.reply(JSON.stringify(loads, null, 2));
+    }
+
+    async openGenerateKeysMenu(ctx: CustomContext) {
+        const buttons = Markup.inlineKeyboard([
+            {
+                text: '1 месяц 🔑',
+                callback_data: AdminCallbacksEnum.GenerateOneMonthKey
+            },
+            {
+                text: '3 месяца 🔑',
+                callback_data: AdminCallbacksEnum.GenerateThreeMonthKey
+            },
+            {
+                text: '6 месяцев 🔑',
+                callback_data: AdminCallbacksEnum.GenerateSixMonthKey
+            },
+            {
+                text: '1 год 🔑',
+                callback_data: AdminCallbacksEnum.GenerateOneYearKey
+            },
+            { text: 'Назад ⬅️', callback_data: AdminCallbacksEnum.GetMenu }
+        ], { columns: 1 });
+
+        ctx.answerCbQuery();
+        deleteLastMessageIfExist(ctx);
+        ctx.reply('Выбери срок действия ключа', buttons)
+    }
+
+    async generateKey(ctx: CustomContext, months: number) {
+        const button = Markup.inlineKeyboard([
+            { text: 'Меню', callback_data: AdminCallbacksEnum.GetMenu }
+        ]);
+        const key = await getVlessKey(months);
+
+        ctx.answerCbQuery();
+        deleteLastMessageIfExist(ctx);
+        ctx.reply(`Сгенерирован ключ на ${months} месяц(ев):\n\n<pre>${key}</pre>`, { parse_mode: 'HTML' });
     }
 }

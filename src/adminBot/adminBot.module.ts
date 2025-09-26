@@ -8,9 +8,11 @@ import { GoogleSheetsModule } from "src/integrations/google-sheets/google-sheets
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { TgUsers } from "entities/tg-user.entity";
 import { MessageBroadcastService } from "./message-broadcast.service";
+import { BotState } from "entities/bots-state.entity";
+import { BotStateModule } from "src/bot-state/bot-state.module";
 
 @Module({
-    imports: [ConfigModule, PaymentsModule, HttpModule, GoogleSheetsModule, TypeOrmModule.forFeature([TgUsers])],
+    imports: [ConfigModule, PaymentsModule, HttpModule, GoogleSheetsModule, BotStateModule, TypeOrmModule.forFeature([TgUsers, BotState])],
     providers: [AdminBotService, MessageBroadcastService, AdminBotUpdate],
 })
 export class AdminBotModule { }

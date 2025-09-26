@@ -25,7 +25,6 @@ export class AdminBotUpdate {
     async getResponseBySessionStatus(@Ctx() ctx: CustomContext) {
         console.log(ctx.session);
         if (ctx.session.status === 'sending_message_to_all') {
-            console.log('Заработало')
             this.adminBotService.sendMessageWithPhoto(ctx);
         }
     }
@@ -35,4 +34,43 @@ export class AdminBotUpdate {
         this.adminBotService.onStartSendMessageToAllUsers(ctx);
     }
 
+    @Action(AdminCallbacksEnum.TurnOffBot)
+    async turnOffUserBot(@Ctx() ctx: CustomContext) {
+        this.adminBotService.disableUserBot(ctx);
+    }
+
+    @Action(AdminCallbacksEnum.TurnOnBot)
+    async turnOnUserBot(@Ctx() ctx: CustomContext) {
+        this.adminBotService.enableUserBot(ctx);
+    }
+
+    @Action(AdminCallbacksEnum.GetServers)
+    async getAllServers(@Ctx() ctx: CustomContext) {
+        this.adminBotService.getAllServers(ctx);
+    }
+
+    @Action(AdminCallbacksEnum.OpenGenerateKeysMenu)
+    async openGenerateKeysMenu(@Ctx() ctx: CustomContext) {
+        this.adminBotService.openGenerateKeysMenu(ctx);
+    }
+
+    @Action(AdminCallbacksEnum.GenerateOneMonthKey)
+    async generateOneMonthKey(@Ctx() ctx: CustomContext) {
+        this.adminBotService.generateKey(ctx, 1);
+    }
+
+    @Action(AdminCallbacksEnum.GenerateThreeMonthKey)
+    async generateThreeMonthKey(@Ctx() ctx: CustomContext) {
+        this.adminBotService.generateKey(ctx, 3);
+    }
+
+    @Action(AdminCallbacksEnum.GenerateSixMonthKey)
+    async generateSixMonthKey(@Ctx() ctx: CustomContext) {
+        this.adminBotService.generateKey(ctx, 6);
+    }
+
+    @Action(AdminCallbacksEnum.GenerateOneYearKey)
+    async generateOneYearKey(@Ctx() ctx: CustomContext) {
+        this.adminBotService.generateKey(ctx, 12);
+    }
 }

@@ -13,8 +13,8 @@ import { PaymentSession } from '../entities/payment-session.entity';
 import { PaymentsModule } from './payments/payments.module';
 import { GoogleSheetsModule } from './integrations/google-sheets/google-sheets.module';
 import { AdminBotModule } from './adminBot/adminBot.module';
-import { HttpService } from '@nestjs/axios';
 import { TgUsers } from 'entities/tg-user.entity';
+import { BotState } from 'entities/bots-state.entity';
 
 const sessions = new LocalSession({ database: 'session_db.json' })
 const adminSessions = new LocalSession({ database: 'admin_session_db.json' })
@@ -25,15 +25,16 @@ const adminSessions = new LocalSession({ database: 'admin_session_db.json' })
       rootPath: join(__dirname, '..', 'pages'), // Путь к папке с вашими статическими файлами
     }),
     ConfigModule.forRoot({
+      isGlobal: true,
       load: [configuration],
     }),
 // Обычный бот
-    TelegrafModule.forRoot({
-      botName: 'userBot',
-      token: configuration().tg.token, // токен основного бота
-      middlewares: [sessions.middleware()],
-      include: [BotModule],            // хэндлеры только из BotModule
-    }),
+    // TelegrafModule.forRoot({
+    //   botName: 'userBot',
+    //   token: configuration().tg.token, // токен основного бота
+    //   middlewares: [sessions.middleware()],
+    //   include: [BotModule],            // хэндлеры только из BotModule
+    // }),
 
     // Админ-бот
     TelegrafModule.forRoot({
@@ -49,7 +50,7 @@ const adminSessions = new LocalSession({ database: 'admin_session_db.json' })
       username: configuration().database.username,
       password: configuration().database.password,
       database: configuration().database.database,
-      entities: [PaymentSession, TgUsers],
+      entities: [PaymentSession, TgUsers, BotState],
       synchronize: true,
       autoLoadEntities: true,
     }),
