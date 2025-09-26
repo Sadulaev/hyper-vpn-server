@@ -2,7 +2,7 @@ type ServersLoads = {[key: string]: { [key: string]: number}[]}
 
 export async function getServersLoads(): Promise<ServersLoads> {
   try {
-    const url = 'http://localhost:5000/loads';
+    const url = 'http://0.0.0.0:5000/loads';
 
     const res = await fetch(url)
 
