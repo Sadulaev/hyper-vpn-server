@@ -11,6 +11,7 @@ import { BotStateService } from "src/bot-state/bot-state.service";
 import configuration from '../config';
 import { BotStateModule } from "src/bot-state/bot-state.module";
 import { GoogleSheetsModule } from "src/integrations/google-sheets/google-sheets.module";
+import { TelegrafGuardsService } from "src/telegraf-guards.service";
 
 
 @Module({
@@ -32,7 +33,7 @@ import { GoogleSheetsModule } from "src/integrations/google-sheets/google-sheets
             }),
         }),
     ],
-    providers: [BotUpdate, BotService],
+    providers: [BotUpdate, BotService, TelegrafGuardsService],
     exports: [BotUpdate],
 })
 export class BotModule { }
