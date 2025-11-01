@@ -42,6 +42,10 @@ export class AdminBotService {
                 callback_data: AdminCallbacksEnum.SendMessage,
             },
             {
+                text: 'Отправить сообщение одному пользователю ✉️',
+                callback_data: AdminCallbacksEnum.StartSendMessageById,
+            },
+            {
                 text: 'Все серверы ℹ️',
                 callback_data: AdminCallbacksEnum.GetServers
             },
@@ -67,6 +71,10 @@ export class AdminBotService {
             {
                 text: 'Отправить сообщение всем ✉️',
                 callback_data: AdminCallbacksEnum.SendMessage,
+            },
+            {
+                text: 'Отправить сообщение одному пользователю ✉️',
+                callback_data: AdminCallbacksEnum.StartSendMessageById,
             },
             {
                 text: 'Все серверы ℹ️',
@@ -97,6 +105,40 @@ export class AdminBotService {
 
         ctx.answerCbQuery();
         ctx.reply('Введите полный пост и он будет отправлен всем', button);
+    }
+
+    async onStartMessageToOneUser(ctx: CustomContext) {
+        ctx.session.status = 'sending_wait-for-id'
+
+        const button = Markup.inlineKeyboard([
+            Markup.button.callback('Отменить ❌', AdminCallbacksEnum.GetMenu)
+        ]);
+
+        ctx.answerCbQuery();
+        ctx.reply('Введите телеграмм ID кому ходите отправить сообщение', button);
+    }
+
+    async saveIdAndWaitForMessage(ctx: CustomContext) {
+        const input = ctx.message.caption || ctx.message.text || '';
+        ctx.session = {
+            status: 'sending_wait-for-message',
+            tgId: input,
+        }
+
+        const button = Markup.inlineKeyboard([
+            Markup.button.callback('Отменить ❌', AdminCallbacksEnum.GetMenu)
+        ]);
+
+        ctx.reply('Введите текст для отправки сообщению пользователю с ником ' + input, button);
+    }
+
+    async sendMessageById(ctx: CustomContext) {
+        const input = ctx.message.caption || ctx.message.text || '';
+
+        this.messageBroadcastService.sendToOne(ctx.session.tgId, input);
+
+        ctx.session.status = undefined;
+        ctx.reply('Отправка завершена');
     }
 
     async sendMessageWithPhoto(ctx: CustomContext) {

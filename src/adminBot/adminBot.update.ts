@@ -27,11 +27,22 @@ export class AdminBotUpdate {
         if (ctx.session.status === 'sending_message_to_all') {
             this.adminBotService.sendMessageWithPhoto(ctx);
         }
+        if (ctx.session.status === 'sending_wait-for-id') {
+            this.adminBotService.saveIdAndWaitForMessage(ctx);
+        }
+        if (ctx.session.status === 'sending_wait-for-message') {
+            this.adminBotService.sendMessageById(ctx);
+        }
     }
 
     @Action(AdminCallbacksEnum.SendMessage)
     async startSendMessageToAllUsers(@Ctx() ctx: CustomContext) {
         this.adminBotService.onStartSendMessageToAllUsers(ctx);
+    }
+
+    @Action(AdminCallbacksEnum.StartSendMessageById)
+    async startSendMessageToUserById(@Ctx() ctx: CustomContext) {
+        this.adminBotService.onStartMessageToOneUser(ctx);
     }
 
     @Action(AdminCallbacksEnum.TurnOffBot)

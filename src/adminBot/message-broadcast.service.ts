@@ -130,6 +130,30 @@ export class MessageBroadcastService {
     };
   }
 
+  async sendToOne(
+    id: number | string,
+    text: string,
+    options?: {
+      photo?: string | Buffer | { source: Buffer | NodeJS.ReadableStream; filename?: string }; // URL, file_id, Buffer, stream
+      parseMode?: 'HTML' | 'Markdown' | 'MarkdownV2';
+      disableNotification?: boolean;
+      replyMarkup?: any; // InlineKeyboardMarkup/ReplyKeyboardMarkup и т.п.
+    }
+  ) {
+    try {
+      await this.sendOne(id, async (id) => {
+        // Обычный текст
+        await this.userBot.telegram.sendMessage(id, text, {
+          parse_mode: options?.parseMode,
+          disable_notification: options?.disableNotification,
+          reply_markup: options?.replyMarkup,
+        });
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   private async takeToken() {
     while (this.tokens <= 0) {
       await this.sleep(10);

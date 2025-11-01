@@ -5,6 +5,8 @@ export enum AdminCallbacksEnum {
     // 
     StartSendMessage = 'admin_start-send-message',
     SendMessage = 'admin_send-message',
+    StartSendMessageById = 'admin_start-send-message-by-id',
+    SendMessageById = 'admin_send-message-by-id',
 
     // 
     TurnOffBot = 'admin_turn-off-bot',
