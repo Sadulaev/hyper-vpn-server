@@ -25,12 +25,15 @@ export class AdminBotUpdate {
     async getResponseBySessionStatus(@Ctx() ctx: CustomContext) {
         console.log(ctx.session);
         if (ctx.session.status === 'sending_message_to_all') {
+            console.log('sending to all users')
             this.adminBotService.sendMessageWithPhoto(ctx);
         }
         if (ctx.session.status === 'sending_wait-for-id') {
+            console.log('saving id now need message')
             this.adminBotService.saveIdAndWaitForMessage(ctx);
         }
         if (ctx.session.status === 'sending_wait-for-message') {
+            console.log('sending to one user')
             this.adminBotService.sendMessageById(ctx);
         }
     }
